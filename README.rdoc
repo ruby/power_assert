@@ -1,0 +1,6 @@
+= power_assert
+== About
+Power Assert for Ruhy.
+
+== Related Projects
+* test-unit-power_assert
