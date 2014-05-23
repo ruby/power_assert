@@ -22,19 +22,19 @@ class TestPowerAssert < Test::Unit::TestCase
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, actual), idx|
     define_method("test_extract_methods_#{idx}") do
-      assert_equal expect, PowerAssert.extract_methods(Ripper.sexp(actual))
+      assert_equal expect, PowerAssert::Context.new.send(:extract_methods, Ripper.sexp(actual))
     end
   end
 
-  def assersion_message(&blk)
+  def assertion_message(&blk)
     ::PowerAssert.start do |pa|
       pa.yield(&blk)
       pa.message_proc.()
     end
   end
 
-  def test_assersion_message
-    assert_equal "\n" + <<END.chomp, assersion_message {
+  def test_assertion_message
+    assert_equal "\n" + <<END.chomp, assertion_message {
       "0".class == "3".to_i.times.map {|i| i + 1 }.class
           |            |    |     |                |
           |            |    |     |                Array
