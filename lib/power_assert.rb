@@ -57,7 +57,6 @@ module PowerAssert
       end
       fmt = (vals[0].colno + 1).times.map {|i| vals.find {|v| v.colno == i } ? "%<#{i}>s" : ' '  }.join
       ret = []
-      ret << ''
       ret << line.chomp
       ret << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.colno.to_s.to_sym] = '|' }).chomp
       vals.each do |i|

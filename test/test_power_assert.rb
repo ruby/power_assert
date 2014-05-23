@@ -34,7 +34,7 @@ class TestPowerAssert < Test::Unit::TestCase
   end
 
   def test_assertion_message
-    assert_equal "\n" + <<END.chomp, assertion_message {
+    assert_equal <<END.chomp, assertion_message {
       "0".class == "3".to_i.times.map {|i| i + 1 }.class
           |            |    |     |                |
           |            |    |     |                Array
