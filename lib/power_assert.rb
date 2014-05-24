@@ -137,6 +137,15 @@ module PowerAssert
         with(_[:command, *ss]) do
           ss.flat_map {|s| extract_methods(s) }
         end
+        with(_[:assign, _, s]) do
+          extract_methods(s)
+        end
+        with(_[:massign, _, s]) do
+          extract_methods(s)
+        end
+        with(_[:paren, ss]) do
+          ss.flat_map {|s| extract_methods(s) }
+        end
         with(_[:@ident, method_name, pos]) do
           [[method_name, pos]]
         end
