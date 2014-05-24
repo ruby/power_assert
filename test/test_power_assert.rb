@@ -32,7 +32,10 @@ class TestPowerAssert < Test::Unit::TestCase
       '{a => b, c => d}'],
 
     [[["a", [1, 2]], ["b", [1, 5]], ["c", [1, 10]], ["d", [1, 13]]],
-      '[[a, b], [c, d]]']
+      '[[a, b], [c, d]]'],
+
+    [[["a", [1, 0]], ["b", [1, 2]], ["c", [1, 5]]],
+      'a b, c { d }']
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, actual), idx|

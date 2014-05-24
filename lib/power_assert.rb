@@ -95,8 +95,8 @@ module PowerAssert
         with(_[:arg_paren, s]) do
           extract_methods(s)
         end
-        with(_[:args_add_block, _[s], _]) do
-          extract_methods(s)
+        with(_[:args_add_block, _[*ss], _]) do
+          ss.flat_map {|s| extract_methods(s) }
         end
         with(_[:vcall, s]) do
           extract_methods(s)
@@ -132,6 +132,9 @@ module PowerAssert
           sss.flat_map {|ss| ss.flat_map {|s| extract_methods(s) } }
         end
         with(_[:array, _[*ss]]) do
+          ss.flat_map {|i| extract_methods(i) }
+        end
+        with(_[:command, *ss]) do
           ss.flat_map {|i| extract_methods(i) }
         end
         with(_) do
