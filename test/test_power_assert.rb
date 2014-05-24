@@ -60,5 +60,8 @@ class TestPowerAssert < Test::Unit::TestCase
 END
       "0".class == "3".to_i.times.map {|i| i + 1 }.class
     }
+    assert_equal '', assertion_message {
+      false
+    }
   end
 end

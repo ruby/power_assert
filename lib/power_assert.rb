@@ -22,7 +22,9 @@ module PowerAssert
       method_ids = nil
       values = []
       @base_caller_length = -1
-      @message_proc = -> { @assertion_message ||= assertion_message(line, methods, values) }
+      @message_proc = -> {
+        @assertion_message ||= @base_caller_length > 0 ? assertion_message(line, methods, values).freeze : nil
+      }
       @trace = TracePoint.new(:return, :c_return) do |tp|
         next if method_ids and not method_ids.find {|i| i == tp.method_id }
         locs = tp.binding.eval('caller_locations')
@@ -53,7 +55,7 @@ module PowerAssert
       set_column(line, methods, values)
       vals = values.find_all(&:column).sort_by(&:column).reverse
       if vals.empty?
-        return
+        return line || ''
       end
       fmt = (vals[0].column + 1).times.map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
       ret = []
@@ -65,7 +67,7 @@ module PowerAssert
                          h[j.column.to_s.to_sym] = [i.value.inspect, '|', ' '][i.column <=> j.column]
                        end).rstrip
       end
-      ret.join("\n").freeze
+      ret.join("\n")
     end
 
     def set_column(line, methods, values)
