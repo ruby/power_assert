@@ -117,6 +117,18 @@ module PowerAssert
         with(s & Symbol & Not(:".")) do
           [[s.to_s, [nil, nil]]]
         end
+        with(_[:hash, s]) do
+          extract_methods(s)
+        end
+        with(_[:assoclist_from_args, s]) do
+          extract_methods(s)
+        end
+        with(_[:bare_assoc_hash, s]) do
+          extract_methods(s)
+        end
+        with(_[_[:assoc_new, sss, ___], ___]) do
+          sss.flat_map {|ss| ss.flat_map {|s| extract_methods(s) } }
+        end
         with(_) do
           []
         end
