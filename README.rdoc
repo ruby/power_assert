@@ -1,6 +1,6 @@
 = power_assert
 == About
-Power Assert for Ruhy.
+Power Assert for Ruby.
 
 == Related Projects
 * test-unit-power_assert
