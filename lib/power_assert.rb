@@ -7,7 +7,7 @@ require 'pattern-match'
 
 module PowerAssert
   class Context
-    RetValue = Struct.new(:method_id, :value, :colno)
+    RetValue = Struct.new(:method_id, :value, :column)
 
     TARGET_CALLER_DIFF = {return: 5, c_return: 4}
     TARGET_CALLER_INDEX = {return: 3, c_return: 2}
@@ -50,33 +50,33 @@ module PowerAssert
     private
 
     def assertion_message(line, methods, values)
-      set_colno(line, methods, values)
-      vals = values.find_all(&:colno).sort_by(&:colno).reverse
+      set_column(line, methods, values)
+      vals = values.find_all(&:column).sort_by(&:column).reverse
       if vals.empty?
         return
       end
-      fmt = (vals[0].colno + 1).times.map {|i| vals.find {|v| v.colno == i } ? "%<#{i}>s" : ' '  }.join
+      fmt = (vals[0].column + 1).times.map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
       ret = []
       ret << line.chomp
-      ret << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.colno.to_s.to_sym] = '|' }).chomp
+      ret << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp
       vals.each do |i|
         ret << sprintf(fmt,
                        vals.each_with_object({}) do |j, h|
-                         h[j.colno.to_s.to_sym] = [i.value.inspect, '|', ' '][i.colno <=> j.colno]
+                         h[j.column.to_s.to_sym] = [i.value.inspect, '|', ' '][i.column <=> j.column]
                        end).rstrip
       end
       ret.join("\n").freeze
     end
 
-    def set_colno(line, methods, values)
+    def set_column(line, methods, values)
       values.each do |val|
         idx = methods.index {|(method_name,*)| method_name == val.method_id.to_s }
         if idx
           m = methods.delete_at(idx)
-          val.colno = m[1][1]
+          val.column = m[1][1]
         else
-          ridx = values.rindex {|i| i.method_id == val.method_id and i.colno }
-          val.colno = line.index(/\b#{Regexp.escape(val.method_id.to_s)}\b/, ridx ? values[ridx].colno + 1 : 0)
+          ridx = values.rindex {|i| i.method_id == val.method_id and i.column }
+          val.column = line.index(/\b#{Regexp.escape(val.method_id.to_s)}\b/, ridx ? values[ridx].column + 1 : 0)
         end
       end
     end
