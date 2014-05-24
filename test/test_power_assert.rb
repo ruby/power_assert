@@ -44,7 +44,10 @@ class TestPowerAssert < Test::Unit::TestCase
       'A(B(c), d)'],
 
     [[["c", [1, 6]], ["f", [1, 17]], ["h", [1, 25]], ["a", [1, 0]]],
-      'a(b = c, (d, e = f), G = h)']
+      'a(b = c, (d, e = f), G = h)'],
+
+    [[["b", [1, 2]], ["c", [1, 6]], ["d", [1, 9]], ["e", [1, 12]], ["g", [1, 18]], ["i", [1, 24]], ["j", [1, 29]], ["a", [1, 0]]],
+      'a(b, *c, d, e, f: g, h: i, **j)']
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, actual), idx|

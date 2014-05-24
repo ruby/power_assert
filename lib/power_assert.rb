@@ -101,6 +101,9 @@ module PowerAssert
         with(_[:arg_paren, s]) do
           extract_methods(s)
         end
+        with(_[:args_add_block, _[:args_add_star, ss0, *ss1], _]) do
+          (ss0 + ss1).flat_map {|s| extract_methods(s) }
+        end
         with(_[:args_add_block, ss, _]) do
           ss.flat_map {|s| extract_methods(s) }
         end
@@ -122,14 +125,17 @@ module PowerAssert
         with(_[:hash, s]) do
           extract_methods(s)
         end
-        with(_[:assoclist_from_args, s]) do
-          extract_methods(s)
+        with(_[:assoclist_from_args, ss]) do
+          ss.flat_map {|s| extract_methods(s) }
         end
-        with(_[:bare_assoc_hash, s]) do
-          extract_methods(s)
+        with(_[:bare_assoc_hash, ss]) do
+          ss.flat_map {|s| extract_methods(s) }
         end
-        with(_[_[:assoc_new, sss, ___], ___]) do
-          sss.flat_map {|ss| ss.flat_map {|s| extract_methods(s) } }
+        with(_[:assoc_new, *ss]) do
+          ss.flat_map {|s| extract_methods(s) }
+        end
+        with(_[:assoc_splat, s]) do
+          extract_methods(s)
         end
         with(_[:array, ss]) do
           ss.flat_map {|s| extract_methods(s) }
