@@ -91,7 +91,7 @@ module PowerAssert
                    _[Or(:brace_block, :do_block), _, ss]]]]) do
           ss.flat_map {|s| extract_methods(s) }
         end
-        with(_[:program, _[s, *_], *_]) do
+        with(_[:program, _[s, *_]]) do
           extract_methods(s)
         end
         with(_[:method_add_arg, s0, s1]) do
@@ -116,8 +116,8 @@ module PowerAssert
         with(_[:binary, *ss]) do
           ss.flat_map {|s| extract_methods(s) }
         end
-        with(_[:call, *ss]) do
-          ss.flat_map {|s| extract_methods(s) }
+        with(_[:call, s0, _, s1]) do
+          [s0, s1].flat_map {|s| extract_methods(s) }
         end
         with(_[:method_add_block, s, _]) do
           extract_methods(s)
@@ -158,7 +158,7 @@ module PowerAssert
         with(_[:@const, method_name, pos]) do
           [[method_name, pos]]
         end
-        with(s & Symbol & Not(:".")) do
+        with(s & Symbol) do
           [[s.to_s, [nil, nil]]]
         end
         with(_) do
