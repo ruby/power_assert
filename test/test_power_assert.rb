@@ -35,17 +35,23 @@ class TestPowerAssert < Test::Unit::TestCase
       '[[a, b], [c, d]]'],
 
     [[["a", [1, 0]], ["b", [1, 2]], ["c", [1, 5]]],
-      'a b, c { d }']
+      'a b, c { d }'],
+
+    [[["a", [1, 20]]],
+      'assertion_message { a }'],
+
+    [[["a", [1, 0]]],
+      'a { b }']
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, actual), idx|
     define_method("test_extract_methods_#{idx}") do
-      assert_equal expect, PowerAssert::Context.new.send(:extract_methods, Ripper.sexp(actual))
+      assert_equal expect, PowerAssert::Context.new(nil).send(:extract_methods, Ripper.sexp(actual), :assertion_message)
     end
   end
 
   def assertion_message(&blk)
-    ::PowerAssert.start do |pa|
+    ::PowerAssert.start(assertion_method: __method__) do |pa|
       pa.yield(&blk)
       pa.message_proc.()
     end
@@ -66,5 +72,11 @@ END
     assert_equal '', assertion_message {
       false
     }
+    assert_equal <<END.chomp,
+    assertion_message { "0".class }
+                            |
+                            String
+END
+    assertion_message { "0".class }
   end
 end

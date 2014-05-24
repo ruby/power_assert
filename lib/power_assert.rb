@@ -14,7 +14,7 @@ module PowerAssert
 
     attr_reader :message_proc
 
-    def initialize
+    def initialize(assertion_method)
       path = nil
       lineno = nil
       line = nil
@@ -33,7 +33,7 @@ module PowerAssert
           path ||= locs[idx].path
           lineno ||= locs[idx].lineno
           line ||= open(path).each_line.drop(lineno - 1).first
-          methods ||= extract_methods(Ripper.sexp(line))
+          methods ||= extract_methods(Ripper.sexp(line), assertion_method)
           method_ids ||= methods.map(&:first).map(&:to_sym)
           if path == locs[idx].path and lineno == locs[idx].lineno
             values << RetValue[tp.method_id, tp.return_value, nil]
@@ -83,8 +83,14 @@ module PowerAssert
       end
     end
 
-    def extract_methods(sexp)
+    def extract_methods(sexp, assertion_method = nil)
       match(sexp) do
+        with(_[:program,
+               _[_[:method_add_block,
+                   _[:method_add_arg, _[:fcall, _[:@ident, assertion_method.to_s, _]], _],
+                   _[Or(:brace_block, :do_block), _, ss]]]]) do
+          ss.flat_map {|s| extract_methods(s) }
+        end
         with(_[:program, _[s, *_], *_]) do
           extract_methods(s)
         end
@@ -144,8 +150,8 @@ module PowerAssert
     end
   end
 
-  def start
-    yield Context.new
+  def start(assertion_method: nil)
+    yield Context.new(assertion_method)
   end
   module_function :start
 end
