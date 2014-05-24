@@ -101,7 +101,7 @@ module PowerAssert
         with(_[:arg_paren, s]) do
           extract_methods(s)
         end
-        with(_[:args_add_block, _[*ss], _]) do
+        with(_[:args_add_block, ss, _]) do
           ss.flat_map {|s| extract_methods(s) }
         end
         with(_[:vcall, s]) do
@@ -110,23 +110,14 @@ module PowerAssert
         with(_[:fcall, s]) do
           extract_methods(s)
         end
-        with(_[:@ident, method_name, pos]) do
-          [[method_name, pos]]
-        end
-        with(_[:@const, method_name, pos]) do
-          [[method_name, pos]]
-        end
         with(_[:binary, *ss]) do
-          ss.flat_map {|i| extract_methods(i) }
+          ss.flat_map {|s| extract_methods(s) }
         end
         with(_[:call, *ss]) do
-          ss.flat_map {|i| extract_methods(i) }
+          ss.flat_map {|s| extract_methods(s) }
         end
         with(_[:method_add_block, s, _]) do
           extract_methods(s)
-        end
-        with(s & Symbol & Not(:".")) do
-          [[s.to_s, [nil, nil]]]
         end
         with(_[:hash, s]) do
           extract_methods(s)
@@ -140,11 +131,20 @@ module PowerAssert
         with(_[_[:assoc_new, sss, ___], ___]) do
           sss.flat_map {|ss| ss.flat_map {|s| extract_methods(s) } }
         end
-        with(_[:array, _[*ss]]) do
-          ss.flat_map {|i| extract_methods(i) }
+        with(_[:array, ss]) do
+          ss.flat_map {|s| extract_methods(s) }
         end
         with(_[:command, *ss]) do
-          ss.flat_map {|i| extract_methods(i) }
+          ss.flat_map {|s| extract_methods(s) }
+        end
+        with(_[:@ident, method_name, pos]) do
+          [[method_name, pos]]
+        end
+        with(_[:@const, method_name, pos]) do
+          [[method_name, pos]]
+        end
+        with(s & Symbol & Not(:".")) do
+          [[s.to_s, [nil, nil]]]
         end
         with(_) do
           []

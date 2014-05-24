@@ -4,11 +4,8 @@ require 'ripper'
 
 class TestPowerAssert < Test::Unit::TestCase
   EXTRACT_METHODS_TEST = [
-    [[["a", [1, 8]], ["foo", [1, 4]], ["foo", [1, 0]]],
-      'foo(foo(a))'],
-
-    [[["class", [1, 4]], ["==", [nil, nil]], ["to_i", [1, 17]], ["times", [1, 22]], ["map", [1, 28]], ["class", [1, 48]]],
-      '"0".class == "3".to_i.times.map {|i| i.ccc(1) }.class'],
+    [[["c", [1, 4]], ["b", [1, 2]], ["d", [1, 8]], ["a", [1, 0]]],
+      'a(b(c), d))'],
 
     [[["a", [1, 0]], ["b", [1, 2]], ["d", [1, 6]], ["c", [1, 4]]],
       'a.b.c(d)'],
