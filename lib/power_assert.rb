@@ -113,6 +113,9 @@ module PowerAssert
         with(_[:@ident, method_name, pos]) do
           [[method_name, pos]]
         end
+        with(_[:@const, method_name, pos]) do
+          [[method_name, pos]]
+        end
         with(_[:binary, *ss]) do
           ss.flat_map {|i| extract_methods(i) }
         end

@@ -41,7 +41,10 @@ class TestPowerAssert < Test::Unit::TestCase
       'assertion_message { a }'],
 
     [[["a", [1, 0]]],
-      'a { b }']
+      'a { b }'],
+
+    [[["c", [1, 4]], ["B", [1, 2]], ["d", [1, 8]], ["A", [1, 0]]],
+      'A(B(c), d)']
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, actual), idx|
