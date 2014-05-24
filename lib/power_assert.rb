@@ -129,6 +129,9 @@ module PowerAssert
         with(_[_[:assoc_new, sss, ___], ___]) do
           sss.flat_map {|ss| ss.flat_map {|s| extract_methods(s) } }
         end
+        with(_[:array, _[*ss]]) do
+          ss.flat_map {|i| extract_methods(i) }
+        end
         with(_) do
           []
         end
