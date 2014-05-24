@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'power_assert'
 require 'ripper'
+require 'set'
 
 class TestPowerAssert < Test::Unit::TestCase
   EXTRACT_METHODS_TEST = [
@@ -87,5 +88,14 @@ END
                             String
 END
     assertion_message { "0".class }
+    assert_equal <<END.chomp, assertion_message {
+      Set.new == Set.new([0])
+          |   |      |
+          |   |      #<Set: {0}>
+          |   false
+          #<Set: {}>
+END
+      Set.new == Set.new([0])
+    }
   end
 end

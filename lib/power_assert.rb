@@ -73,12 +73,17 @@ module PowerAssert
     def set_column(line, methods, values)
       values.each do |val|
         idx = methods.index {|(method_name,*)| method_name == val.method_id.to_s }
-        if idx
-          m = methods.delete_at(idx)
+        if idx and (m = methods.delete_at(idx))[1][1]
           val.column = m[1][1]
         else
           ridx = values.rindex {|i| i.method_id == val.method_id and i.column }
-          val.column = line.index(/\b#{Regexp.escape(val.method_id.to_s)}\b/, ridx ? values[ridx].column + 1 : 0)
+          method_name = val.method_id.to_s
+          re = /
+            #{'\b' if /\A\w/ =~ method_name}
+            #{Regexp.escape(method_name)}
+            #{'\b' if /\w\z/ =~ method_name}
+          /x
+          val.column = line.index(re, ridx ? values[ridx].column + 1 : 0)
         end
       end
     end
