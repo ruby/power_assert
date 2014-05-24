@@ -167,6 +167,7 @@ module PowerAssert
       end
     end
   end
+  private_constant :Context
 
   def start(assertion_method: nil)
     yield Context.new(assertion_method)

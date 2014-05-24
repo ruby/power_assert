@@ -52,7 +52,7 @@ class TestPowerAssert < Test::Unit::TestCase
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|
     define_method("test_extract_methods_#{idx}") do
-      assert_equal expect, PowerAssert::Context.new(nil).send(:extract_methods, Ripper.sexp(source), :assertion_message), source
+      assert_equal expect, PowerAssert.const_get(:Context).new(nil).send(:extract_methods, Ripper.sexp(source), :assertion_message), source
     end
   end
 
