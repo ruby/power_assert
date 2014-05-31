@@ -33,7 +33,7 @@ module PowerAssert
         @assertion_message ||=
           @base_caller_length > 0 ? assertion_message(line, methods, return_values, refs, assertion_proc.binding).freeze : nil
       }
-      @proc_local_variables = assertion_proc ? assertion_proc.binding.eval('local_variables').map(&:to_s) : []
+      @proc_local_variables = assertion_proc.binding.eval('local_variables').map(&:to_s)
       @trace = TracePoint.new(:return, :c_return) do |tp|
         next if method_ids and ! method_ids.include?(tp.method_id)
         locs = tp.binding.eval('caller_locations')
