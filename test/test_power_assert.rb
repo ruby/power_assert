@@ -96,6 +96,8 @@ class TestPowerAssert < Test::Unit::TestCase
 END
       String(a) + String(@b) + String(@@c) + String($d)
     }
+
+
     assert_equal <<END.chomp, assertion_message {
       "0".class == "3".to_i.times.map {|i| i + 1 }.class
           |     |      |    |     |                |
@@ -108,15 +110,21 @@ END
 END
       "0".class == "3".to_i.times.map {|i| i + 1 }.class
     }
+
+
     assert_equal '', assertion_message {
       false
     }
+
+
     assert_equal <<END.chomp,
     assertion_message { "0".class }
                             |
                             String
 END
     assertion_message { "0".class }
+
+
     assert_equal <<END.chomp, assertion_message {
       Set.new == Set.new([0])
       |   |   |  |   |
