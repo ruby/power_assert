@@ -81,13 +81,16 @@ class TestPowerAssert < Test::Unit::TestCase
     $d = 3
     assert_equal <<END.chomp, assertion_message {
       String(a) + String(@b) + String(@@c) + String($d)
-      |      |    |      |     |      |      |      |
-      |      |    |      |     |      |      |      3
-      |      |    |      |     |      |      "3"
-      |      |    |      |     |      2
-      |      |    |      |     "2"
-      |      |    |      1
-      |      |    "1"
+      |      |  | |      |   | |      |    | |      |
+      |      |  | |      |   | |      |    | |      3
+      |      |  | |      |   | |      |    | "3"
+      |      |  | |      |   | |      |    "0123"
+      |      |  | |      |   | |      2
+      |      |  | |      |   | "2"
+      |      |  | |      |   "012"
+      |      |  | |      1
+      |      |  | "1"
+      |      |  "01"
       |      0
       "0"
 END
@@ -95,11 +98,12 @@ END
     }
     assert_equal <<END.chomp, assertion_message {
       "0".class == "3".to_i.times.map {|i| i + 1 }.class
-          |            |    |     |                |
-          |            |    |     |                Array
-          |            |    |     [1, 2, 3]
-          |            |    #<Enumerator: 3:times>
-          |            3
+          |     |      |    |     |                |
+          |     |      |    |     |                Array
+          |     |      |    |     [1, 2, 3]
+          |     |      |    #<Enumerator: 3:times>
+          |     |      3
+          |     false
           String
 END
       "0".class == "3".to_i.times.map {|i| i + 1 }.class

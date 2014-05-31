@@ -199,3 +199,7 @@ module PowerAssert
   end
   module_function :start
 end
+
+RubyVM::InstructionSequence.compile_option = {
+  specialized_instruction: false
+}
