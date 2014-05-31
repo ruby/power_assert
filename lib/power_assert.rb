@@ -84,6 +84,7 @@ module PowerAssert
     end
 
     def set_column(line, methods, return_values)
+      methods &&= methods.dup
       return_values.each do |val|
         idx = methods.index {|method| method.name == val.name }
         if idx and (m = methods.delete_at(idx)).column
