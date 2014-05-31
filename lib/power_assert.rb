@@ -1,3 +1,7 @@
+# power_assert.rb
+#
+# Copyright (C) 2014 Kazuki Tsujimoto, All rights reserved.
+
 require 'power_assert/version'
 
 require 'ripper'
