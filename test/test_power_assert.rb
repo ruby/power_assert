@@ -5,69 +5,94 @@ require 'set'
 
 class TestPowerAssert < Test::Unit::TestCase
   EXTRACT_METHODS_TEST = [
-    [[["c", [1, 4]], ["b", [1, 2]], ["d", [1, 8]], ["a", [1, 0]]],
+    [[[:method, "c", 4], [:method, "b", 2], [:method, "d", 8], [:method, "a", 0]],
       'a(b(c), d))'],
 
-    [[["a", [1, 0]], ["b", [1, 2]], ["d", [1, 6]], ["c", [1, 4]]],
+    [[[:method, "a", 0], [:method, "b", 2], [:method, "d", 6], [:method, "c", 4]],
       'a.b.c(d)'],
 
-    [[["b", [1, 2]], ["a", [1, 0]], ["c", [1, 5]], ["e", [1, 9]], ["d", [1, 7]]],
+    [[[:method, "b", 2], [:method, "a", 0], [:method, "c", 5], [:method, "e", 9], [:method, "d", 7]],
       'a(b).c.d(e)'],
 
-    [[["b", [1, 4]], ["a", [1, 2]], ["c", [1, 7]], ["e", [1, 13]], ["g", [1, 11]], ["d", [1, 9]], ["f", [1, 0]]],
+    [[[:method, "b", 4], [:method, "a", 2], [:method, "c", 7], [:method, "e", 13], [:method, "g", 11], [:method, "d", 9], [:method, "f", 0]],
       'f(a(b).c.d(g(e)))'],
 
-    [[["c", [1, 5]], ["e", [1, 11]], ["a", [1, 0]]],
+    [[[:method, "c", 5], [:method, "e", 11], [:method, "a", 0]],
       'a(b: c, d: e)'],
 
-    [[["b", [1, 2]], ["c", [1, 7]], ["d", [1, 10]], ["e", [1, 15]], ["a", [1, 0]]],
+    [[[:method, "b", 2], [:method, "c", 7], [:method, "d", 10], [:method, "e", 15], [:method, "a", 0]],
       'a(b => c, d => e)'],
 
-    [[["b", [1, 4]], ["d", [1, 10]]],
+    [[[:method, "b", 4], [:method, "d", 10]],
       '{a: b, c: d}'],
 
-    [[["a", [1, 1]], ["b", [1, 6]], ["c", [1, 9]], ["d", [1, 14]]],
+    [[[:method, "a", 1], [:method, "b", 6], [:method, "c", 9], [:method, "d", 14]],
       '{a => b, c => d}'],
 
-    [[["a", [1, 2]], ["b", [1, 5]], ["c", [1, 10]], ["d", [1, 13]]],
+    [[[:method, "a", 2], [:method, "b", 5], [:method, "c", 10], [:method, "d", 13]],
       '[[a, b], [c, d]]'],
 
-    [[["a", [1, 0]], ["b", [1, 2]], ["c", [1, 5]]],
+    [[[:method, "a", 0], [:method, "b", 2], [:method, "c", 5]],
       'a b, c { d }'],
 
-    [[["a", [1, 20]]],
+    [[[:method, "a", 20]],
       'assertion_message { a }'],
 
-    [[["a", [1, 0]]],
+    [[[:method, "a", 0]],
       'a { b }'],
 
-    [[["c", [1, 4]], ["B", [1, 2]], ["d", [1, 8]], ["A", [1, 0]]],
+    [[[:method, "c", 4], [:method, "B", 2], [:method, "d", 8], [:method, "A", 0]],
       'A(B(c), d)'],
 
-    [[["c", [1, 6]], ["f", [1, 17]], ["h", [1, 25]], ["a", [1, 0]]],
+    [[[:method, "c", 6], [:method, "f", 17], [:method, "h", 25], [:method, "a", 0]],
       'a(b = c, (d, e = f), G = h)'],
 
-    [[["b", [1, 2]], ["c", [1, 6]], ["d", [1, 9]], ["e", [1, 12]], ["g", [1, 18]], ["i", [1, 24]], ["j", [1, 29]], ["a", [1, 0]]],
+    [[[:method, "b", 2], [:method, "c", 6], [:method, "d", 9], [:method, "e", 12], [:method, "g", 18], [:method, "i", 24], [:method, "j", 29], [:method, "a", 0]],
       'a(b, *c, d, e, f: g, h: i, **j)'],
 
-    [[["a", [1, 0]], ["==", [nil, nil]], ["b", [1, 5]], ["+", [nil, nil]], ["c", [1, 9]]],
+    [[[:method, "a", 0], [:method, "==", nil], [:method, "b", 5], [:method, "+", nil], [:method, "c", 9]],
       'a == b + c'],
+
+    [[[:ref, "var", 0], [:ref, "var", 8], [:method, "var", 4]],
+      'var.var(var)'],
+
+    [[[:ref, "B", 2], [:ref, "@c", 5], [:ref, "@@d", 9], [:ref, "$e", 14], [:method, "f", 18], [:method, "self", 20], [:ref, "self", 26], [:method, "a", 0]],
+      'a(B, @c, @@d, $e, f.self, self)']
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|
     define_method("test_extract_methods_#{idx}") do
-      assert_equal expect, PowerAssert.const_get(:Context).new(nil).send(:extract_methods, Ripper.sexp(source), :assertion_message), source
+      pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> {} }.(), nil)
+      assert_equal expect, pa.send(:extract_idents, Ripper.sexp(source), :assertion_message).map(&:to_a), source
     end
   end
 
   def assertion_message(&blk)
-    ::PowerAssert.start(assertion_method: __method__) do |pa|
-      pa.yield(&blk)
+    ::PowerAssert.start(blk, assertion_method: __method__) do |pa|
+      pa.yield
       pa.message_proc.()
     end
   end
 
   def test_assertion_message
+    a = 0
+    @b = 1
+    @@c = 2
+    $d = 3
+    assert_equal <<END.chomp, assertion_message {
+      String(a) + String(@b) + String(@@c) + String($d)
+      |      |    |      |     |      |      |      |
+      |      |    |      |     |      |      |      3
+      |      |    |      |     |      |      "3"
+      |      |    |      |     |      2
+      |      |    |      |     "2"
+      |      |    |      1
+      |      |    "1"
+      |      0
+      "0"
+END
+      String(a) + String(@b) + String(@@c) + String($d)
+    }
     assert_equal <<END.chomp, assertion_message {
       "0".class == "3".to_i.times.map {|i| i + 1 }.class
           |            |    |     |                |
@@ -90,10 +115,12 @@ END
     assertion_message { "0".class }
     assert_equal <<END.chomp, assertion_message {
       Set.new == Set.new([0])
-          |   |      |
-          |   |      #<Set: {0}>
-          |   false
-          #<Set: {}>
+      |   |   |  |   |
+      |   |   |  |   #<Set: {0}>
+      |   |   |  Set
+      |   |   false
+      |   #<Set: {}>
+      Set
 END
       Set.new == Set.new([0])
     }
