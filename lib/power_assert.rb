@@ -46,7 +46,7 @@ module PowerAssert
             idents = extract_idents(Ripper.sexp(line), assertion_method)
             methods, refs = idents.partition {|i| i.type == :method }
           end
-          method_ids = methods.map(&:name).map(&:to_sym).uniq
+          method_ids ||= methods.map(&:name).map(&:to_sym).uniq
           if path == locs[idx].path and lineno == locs[idx].lineno
             return_values << Value[tp.method_id.to_s, tp.return_value, nil]
           end
