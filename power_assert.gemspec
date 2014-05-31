@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.require_paths    = ['lib']
   s.add_runtime_dependency 'pattern-match'
   s.add_development_dependency 'test-unit'
+  s.add_development_dependency 'rake'
   s.extra_rdoc_files = ['README.rdoc']
   s.rdoc_options     = ['--main', 'README.rdoc']
 end
