@@ -4,3 +4,5 @@ Power Assert for Ruby.
 
 == Related Projects
 * {test-unit-power_assert}[https://github.com/k-tsj/test-unit-power_assert]
+
+== Travis Build Status {<img src="https://secure.travis-ci.org/k-tsj/power_assert.png"/>}[http://travis-ci.org/k-tsj/power_assert]
