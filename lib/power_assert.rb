@@ -65,7 +65,7 @@ module PowerAssert
 
     def assertion_message(line, methods, return_values, refs, proc_binding)
       set_column(line, methods, return_values)
-      ref_values = refs ? refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] } :[]
+      ref_values = refs ? refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] } : []
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
       if vals.empty?
         return line || ''
