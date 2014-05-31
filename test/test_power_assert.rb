@@ -57,7 +57,10 @@ class TestPowerAssert < Test::Unit::TestCase
       'var.var(var)'],
 
     [[[:ref, "B", 2], [:ref, "@c", 5], [:ref, "@@d", 9], [:ref, "$e", 14], [:method, "f", 18], [:method, "self", 20], [:ref, "self", 26], [:method, "a", 0]],
-      'a(B, @c, @@d, $e, f.self, self)']
+      'a(B, @c, @@d, $e, f.self, self)'],
+
+    [[[:method, "a", 0], [:method, "c", 4], [:method, "b", 2]],
+      'a.b c']
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|

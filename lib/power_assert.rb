@@ -162,6 +162,9 @@ module PowerAssert
         with(_[:command, *ss]) do
           ss.flat_map {|s| extract_idents(s) }
         end
+        with(_[:command_call, s0, _, s1, s2]) do
+          [s0, s2, s1].flat_map {|s| extract_idents(s) }
+        end
         with(_[:assign, _, s]) do
           extract_idents(s)
         end
