@@ -31,7 +31,7 @@ module PowerAssert
       @assertion_proc = assertion_proc
       @message_proc = -> {
         @assertion_message ||=
-          @base_caller_length > 0 ? assertion_message(line, methods, return_values, refs, @assertion_proc.binding).freeze : nil
+          @base_caller_length > 0 ? assertion_message(line, methods, return_values, refs, assertion_proc.binding).freeze : nil
       }
       @proc_local_variables = assertion_proc ? assertion_proc.binding.eval('local_variables').map(&:to_s) : []
       @trace = TracePoint.new(:return, :c_return) do |tp|
@@ -118,8 +118,8 @@ module PowerAssert
           extract_idents(s)
         end
         with(_[:method_add_arg, s0, s1]) do
-          s0_methods = extract_idents(s0)
-          s0_methods[0..-2] + extract_idents(s1) + [s0_methods[-1]]
+          s0_idents = extract_idents(s0)
+          s0_idents[0..-2] + extract_idents(s1) + [s0_idents[-1]]
         end
         with(_[:arg_paren, s]) do
           extract_idents(s)
