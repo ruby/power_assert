@@ -31,7 +31,7 @@ module PowerAssert
       @assertion_proc = assertion_proc
       @message_proc = -> {
         @assertion_message ||=
-          @base_caller_length > 0 ? assertion_message(line, methods, return_values, refs, assertion_proc.binding).freeze : nil
+          @base_caller_length > 0 ? assertion_message(line || '', methods || [], return_values, refs || [], assertion_proc.binding).freeze : nil
       }
       @proc_local_variables = assertion_proc.binding.eval('local_variables').map(&:to_s)
       @trace = TracePoint.new(:return, :c_return) do |tp|
@@ -69,10 +69,10 @@ module PowerAssert
 
     def assertion_message(line, methods, return_values, refs, proc_binding)
       set_column(line, methods, return_values)
-      ref_values = refs ? refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] } : []
+      ref_values = refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] }
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
       if vals.empty?
-        return line || ''
+        return line
       end
       fmt = (vals[0].column + 1).times.map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
       ret = []
@@ -88,7 +88,7 @@ module PowerAssert
     end
 
     def set_column(line, methods, return_values)
-      methods &&= methods.dup
+      methods = methods.dup
       return_values.each do |val|
         idx = methods.index {|method| method.name == val.name }
         if idx and (m = methods.delete_at(idx)).column
