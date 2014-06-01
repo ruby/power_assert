@@ -3,9 +3,9 @@
 # Copyright (C) 2014 Kazuki Tsujimoto, All rights reserved.
 
 require 'power_assert/version'
+require 'power_assert/pattern_match'
 
 require 'ripper'
-require 'pattern-match'
 
 # NB: API is not fixed
 

@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.test_files       = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables      = `git ls-files -- bin/*`.split("\n").map{|f| File.basename(f) }
   s.require_paths    = ['lib']
-  s.add_runtime_dependency 'pattern-match'
+  s.add_runtime_dependency 'pattern-match', '>= 0.5.1'
   s.add_development_dependency 'test-unit'
   s.add_development_dependency 'rake'
   s.extra_rdoc_files = ['README.rdoc']
