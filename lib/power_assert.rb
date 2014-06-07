@@ -161,7 +161,7 @@ module PowerAssert
           extract_idents(s)
         end
         with(_[:array, ss]) do
-          ss.flat_map {|s| extract_idents(s) }
+          ss ? ss.flat_map {|s| extract_idents(s) } : []
         end
         with(_[:string_literal, s]) do
           extract_idents(s)
