@@ -160,6 +160,9 @@ module PowerAssert
         with(_[:string_literal, s]) do
           extract_idents(s)
         end
+        with(_[:xstring_literal, _[*ss]]) do
+          ss.flat_map {|s| extract_idents(s) }
+        end
         with(_[:string_content, *ss]) do
           ss.flat_map {|s| extract_idents(s) }
         end

@@ -93,7 +93,10 @@ class TestPowerAssert < Test::Unit::TestCase
 
     [[[:method, "a", 2], [:method, "!", 0], [:method, "b", 9], [:method, "+@", 8], [:method, "c", 15], [:method, "-@", 14],
         [:method, "==", 11], [:method, "==", 4]],
-      '! a == (+b == -c)']
+      '! a == (+b == -c)'],
+
+    [[[:method, "b", 6]],
+      '%x{a#{b}c}'],
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|
