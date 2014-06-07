@@ -22,7 +22,7 @@ module PowerAssert
     def initialize(assertion_proc, assertion_method)
       path = nil
       lineno = nil
-      line = nil
+      @line = nil
       methods = nil
       refs = nil
       method_ids = nil
@@ -31,7 +31,7 @@ module PowerAssert
       @assertion_proc = assertion_proc
       @message_proc = -> {
         @assertion_message ||=
-          @base_caller_length > 0 ? assertion_message(line || '', methods || [], return_values, refs || [], assertion_proc.binding).freeze : nil
+          @base_caller_length > 0 ? assertion_message(@line || '', methods || [], return_values, refs || [], assertion_proc.binding).freeze : nil
       }
       @proc_local_variables = assertion_proc.binding.eval('local_variables').map(&:to_s)
       @trace = TracePoint.new(:return, :c_return) do |tp|
@@ -41,9 +41,9 @@ module PowerAssert
           idx = TARGET_CALLER_INDEX[tp.event]
           path ||= locs[idx].path
           lineno ||= locs[idx].lineno
-          line ||= open(path).each_line.drop(lineno - 1).first
+          @line ||= open(path).each_line.drop(lineno - 1).first
           unless methods
-            idents = extract_idents(Ripper.sexp(line), assertion_method)
+            idents = extract_idents(Ripper.sexp(@line), assertion_method)
             methods, refs = idents.partition {|i| i.type == :method }
           end
           method_ids ||= methods.map(&:name).map(&:to_sym).uniq
@@ -91,17 +91,8 @@ module PowerAssert
       methods = methods.dup
       return_values.each do |val|
         idx = methods.index {|method| method.name == val.name }
-        if idx and (m = methods.delete_at(idx)).column
-          val.column = m.column
-        else
-          ridx = return_values.rindex {|i| i.name == val.name and i.column }
-          method_name = val.name
-          re = /
-            #{'\b' if /\A\w/ =~ method_name}
-            #{Regexp.escape(method_name)}
-            #{'\b' if /\w\z/ =~ method_name}
-          /x
-          val.column = line.index(re, ridx ? return_values[ridx].column + 1 : 0)
+        if idx
+          val.column = methods.delete_at(idx).column
         end
       end
     end
@@ -136,8 +127,11 @@ module PowerAssert
         with(_[:fcall, s]) do
           extract_idents(s)
         end
-        with(_[:binary, *ss]) do
-          ss.flat_map {|s| extract_idents(s) }
+        with(_[:unary, mid, s]) do
+          handle_columnless_ident([], mid, extract_idents(s))
+        end
+        with(_[:binary, s0, mid, s1]) do
+          handle_columnless_ident(extract_idents(s0), mid, extract_idents(s1))
         end
         with(_[:call, s0, _, s1]) do
           [s0, s1].flat_map {|s| extract_idents(s) }
@@ -190,6 +184,9 @@ module PowerAssert
         with(_[:paren, ss]) do
           ss.flat_map {|s| extract_idents(s) }
         end
+        with(_[:aref, s0, s1]) do
+          handle_columnless_ident(extract_idents(s0), :[], extract_idents(s1))
+        end
         with(_[:var_ref, _[:@kw, "self", _[_, column]]]) do
           [Ident[:ref, "self", column]]
         end
@@ -202,12 +199,46 @@ module PowerAssert
         with(_[:@const, method_name, _[_, column]]) do
           [Ident[:method, method_name, column]]
         end
-        with(s & Symbol) do
-          [Ident[:method, s.to_s, nil]]
-        end
         with(_) do
           []
         end
+      end
+    end
+
+    def str_indices(str, re, offset, limit)
+      idx = str.index(re, offset)
+      if idx and idx <= limit
+        [idx, *str_indices(str, re, idx + 1, limit)]
+      else
+        []
+      end
+    end
+
+    MID2SRCTXT = {
+      :[] => '[',
+      :+@ => '+',
+      :-@ => '-'
+    }
+
+    def handle_columnless_ident(left_idents, mid, right_idents)
+      left_max = left_idents.max_by(&:column)
+      right_min = right_idents.min_by(&:column)
+      bg = left_max ? left_max.column + left_max.name.length : 0
+      ed = right_min ? right_min.column - 1 : @line.length - 1
+      mname = mid.to_s
+      srctxt = MID2SRCTXT[mid] || mname
+      re = /
+        #{'\b' if /\A\w/ =~ srctxt}
+        #{Regexp.escape(srctxt)}
+        #{'\b' if /\w\z/ =~ srctxt}
+      /x
+      indices = str_indices(@line, re, bg, ed)
+      if left_idents.empty? and right_idents.empty?
+        left_idents + right_idents
+      elsif left_idents.empty?
+        left_idents + right_idents + [Ident[:method, mname, indices.last]]
+      else
+        left_idents + right_idents + [Ident[:method, mname, indices.first]]
       end
     end
   end

@@ -50,7 +50,7 @@ class TestPowerAssert < Test::Unit::TestCase
     [[[:method, "b", 2], [:method, "c", 6], [:method, "d", 9], [:method, "e", 12], [:method, "g", 18], [:method, "i", 24], [:method, "j", 29], [:method, "a", 0]],
       'a(b, *c, d, e, f: g, h: i, **j)'],
 
-    [[[:method, "a", 0], [:method, "==", nil], [:method, "b", 5], [:method, "+", nil], [:method, "c", 9]],
+    [[[:method, "a", 0], [:method, "b", 5], [:method, "c", 9], [:method, "+", 7], [:method, "==", 2]],
       'a == b + c'],
 
     [[[:ref, "var", 0], [:ref, "var", 8], [:method, "var", 4]],
@@ -70,11 +70,36 @@ class TestPowerAssert < Test::Unit::TestCase
 
     [[],
       '[]'],
+
+    [[[:method, "a", 0], [:method, "[]", 1]],
+      'a[0]'],
+
+    # not supported
+    [[],
+      '[][]'],
+
+    # not supported
+    [[],
+      '{}[]'],
+
+    [[[:method, "a", 1], [:method, "!", 0]],
+      '!a'],
+
+    [[[:method, "a", 1], [:method, "+@", 0]],
+      '+a'],
+
+    [[[:method, "a", 1], [:method, "-@", 0]],
+      '-a'],
+
+    [[[:method, "a", 2], [:method, "!", 0], [:method, "b", 9], [:method, "+@", 8], [:method, "c", 15], [:method, "-@", 14],
+        [:method, "==", 11], [:method, "==", 4]],
+      '! a == (+b == -c)']
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|
     define_method("test_extract_methods_#{'%03d' % idx}") do
       pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> {} }.(), nil)
+      pa.instance_variable_set(:@line, source)
       assert_equal expect, pa.send(:extract_idents, Ripper.sexp(source), :assertion_message).map(&:to_a), source
     end
   end
@@ -147,6 +172,34 @@ END
       Set
 END
       Set.new == Set.new([0])
+    }
+
+
+    var = [10,20]
+    assert_equal <<END.chomp, assertion_message {
+      var[0] == 0
+      |  |   |
+      |  |   false
+      |  10
+      [10, 20]
+END
+      var[0] == 0
+    }
+
+    a = 1
+    assert_equal <<END.chomp, assertion_message {
+      ! a != (+a == -a)
+      | | |   || |  ||
+      | | |   || |  |1
+      | | |   || |  -1
+      | | |   || false
+      | | |   |1
+      | | |   1
+      | | false
+      | 1
+      false
+END
+      ! a != (+a == -a)
     }
   end
 end
