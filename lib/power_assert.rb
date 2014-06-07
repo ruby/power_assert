@@ -172,6 +172,9 @@ module PowerAssert
         with(_[:regexp_literal, ss, _]) do
           ss.flat_map {|s| extract_idents(s) }
         end
+        with(_[:dyna_symbol, _[*ss]]) do
+          ss.flat_map {|s| extract_idents(s) }
+        end
         with(_[:command, *ss]) do
           ss.flat_map {|s| extract_idents(s) }
         end
