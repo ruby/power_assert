@@ -187,6 +187,12 @@ module PowerAssert
         with(_[:paren, ss]) do
           ss.flat_map {|s| extract_idents(s) }
         end
+        with(_[:dot2, *ss]) do
+          ss.flat_map {|s| extract_idents(s) }
+        end
+        with(_[:dot3, *ss]) do
+          ss.flat_map {|s| extract_idents(s) }
+        end
         with(_[:aref, s0, s1]) do
           handle_columnless_ident(extract_idents(s0), :[], extract_idents(s1))
         end
