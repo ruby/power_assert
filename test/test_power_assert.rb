@@ -103,6 +103,9 @@ class TestPowerAssert < Test::Unit::TestCase
 
     [[[:method, "a", 0], [:method, "b", 4]],
       "a...b"],
+
+    [[[:ref, "A", 2], [:ref, "B", 5], [:ref, "C", 8]],
+      '::A::B::C'],
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|
