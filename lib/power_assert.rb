@@ -31,7 +31,12 @@ module PowerAssert
       @assertion_proc = assertion_proc
       @message_proc = -> {
         @assertion_message ||=
-          @base_caller_length > 0 ? assertion_message(@line || '', methods || [], return_values, refs || [], assertion_proc.binding).freeze : nil
+          @base_caller_length > 0 ? assertion_message(@line || '',
+                                                      methods || [],
+                                                      return_values,
+                                                      refs || [],
+                                                      assertion_proc.binding).freeze :
+                                    nil
       }
       @proc_local_variables = assertion_proc.binding.eval('local_variables').map(&:to_s)
       @trace = TracePoint.new(:return, :c_return) do |tp|
@@ -39,14 +44,14 @@ module PowerAssert
         locs = tp.binding.eval('caller_locations')
         if locs.length - @base_caller_length == TARGET_CALLER_DIFF[tp.event]
           idx = TARGET_CALLER_INDEX[tp.event]
-          path ||= locs[idx].path
-          lineno ||= locs[idx].lineno
-          @line ||= open(path).each_line.drop(lineno - 1).first
-          unless methods
+          unless path
+            path = locs[idx].path
+            lineno = locs[idx].lineno
+            @line = open(path).each_line.drop(lineno - 1).first
             idents = extract_idents(Ripper.sexp(@line), assertion_method)
             methods, refs = idents.partition {|i| i.type == :method }
+            method_ids = methods.map(&:name).map(&:to_sym).uniq
           end
-          method_ids ||= methods.map(&:name).map(&:to_sym).uniq
           if path == locs[idx].path and lineno == locs[idx].lineno
             return_values << Value[tp.method_id.to_s, tp.return_value, nil]
           end
