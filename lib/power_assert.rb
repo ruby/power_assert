@@ -3,7 +3,6 @@
 # Copyright (C) 2014 Kazuki Tsujimoto, All rights reserved.
 
 require 'power_assert/version'
-require 'power_assert/pattern_match'
 
 require 'ripper'
 
@@ -29,6 +28,7 @@ module PowerAssert
       return_values = []
       @base_caller_length = -1
       @assertion_proc = assertion_proc
+      @assertion_method_name = assertion_method.to_s
       @message_proc = -> {
         @assertion_message ||=
           @base_caller_length > 0 ? assertion_message(@line || '',
@@ -48,7 +48,7 @@ module PowerAssert
             path = locs[idx].path
             lineno = locs[idx].lineno
             @line = open(path).each_line.drop(lineno - 1).first
-            idents = extract_idents(Ripper.sexp(@line), assertion_method)
+            idents = extract_idents(Ripper.sexp(@line))
             methods, refs = idents.partition {|i| i.type == :method }
             method_ids = methods.map(&:name).map(&:to_sym).uniq
           end
@@ -102,123 +102,75 @@ module PowerAssert
       end
     end
 
-    def extract_idents(sexp, assertion_method = nil)
-      match(sexp) do
-        with(_[:program,
-               _[_[:method_add_block,
-                   _[:method_add_arg, _[:fcall, _[:@ident, assertion_method.to_s, _]], _],
-                   _[Or(:brace_block, :do_block), _, ss]]]]) do
+    def extract_idents(sexp)
+      tag, * = sexp
+      case tag
+      when :arg_paren, :assoc_splat, :fcall, :hash, :method_add_block, :string_literal
+        extract_idents(sexp[1])
+      when :assign, :massign
+        extract_idents(sexp[2])
+      when :assoclist_from_args, :bare_assoc_hash, :dyna_symbol, :paren, :string_embexpr,
+        :regexp_literal, :xstring_literal
+        sexp[1].flat_map {|s| extract_idents(s) }
+      when :assoc_new, :command, :dot2, :dot3, :string_content
+        sexp[1..-1].flat_map {|s| extract_idents(s) }
+      when :unary
+        handle_columnless_ident([], sexp[1], extract_idents(sexp[2]))
+      when :binary
+        handle_columnless_ident(extract_idents(sexp[1]), sexp[2], extract_idents(sexp[3]))
+      when :call
+        [sexp[1], sexp[3]].flat_map {|s| extract_idents(s) }
+      when :array
+        sexp[1] ? sexp[1].flat_map {|s| extract_idents(s) } : []
+      when :command_call
+        [sexp[1], sexp[4], sexp[3]].flat_map {|s| extract_idents(s) }
+      when :aref
+        handle_columnless_ident(extract_idents(sexp[1]), :[], extract_idents(sexp[2]))
+      when :program
+        _, ((tag0, (tag1, (tag2, (tag3, mname, _)), _), (tag4, _, ss))) = sexp
+        if tag0 == :method_add_block and tag1 == :method_add_arg and tag2 == :fcall and
+            tag3 == :@ident and mname == @assertion_method_name and (tag4 == :brace_block or tag4 == :do_block)
           ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:program, _[s, *_]]) do
+        else
+          _, (s, *) = sexp
           extract_idents(s)
         end
-        with(_[:method_add_arg, s0, s1]) do
-          s0_idents = extract_idents(s0)
-          s0_idents[0..-2] + extract_idents(s1) + [s0_idents[-1]]
-        end
-        with(_[:arg_paren, s]) do
-          extract_idents(s)
-        end
-        with(_[:args_add_block, _[:args_add_star, ss0, *ss1], _]) do
+      when :method_add_arg
+        idents = extract_idents(sexp[1])
+        idents[0..-2] + extract_idents(sexp[2]) + [idents[-1]]
+      when :args_add_block
+        _, (tag, ss0, *ss1), _ = sexp
+        if tag == :args_add_star
           (ss0 + ss1).flat_map {|s| extract_idents(s) }
+        else
+          sexp[1].flat_map {|s| extract_idents(s) }
         end
-        with(_[:args_add_block, ss, _]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:vcall, _[:@ident, name, _[_, column]]]) do
+      when :vcall
+        _, (tag, name, (_, column)) = sexp
+        if tag == :@ident
           [Ident[@proc_local_variables.include?(name) ? :ref : :method, name, column]]
-        end
-        with(_[:fcall, s]) do
-          extract_idents(s)
-        end
-        with(_[:unary, mid, s]) do
-          handle_columnless_ident([], mid, extract_idents(s))
-        end
-        with(_[:binary, s0, mid, s1]) do
-          handle_columnless_ident(extract_idents(s0), mid, extract_idents(s1))
-        end
-        with(_[:call, s0, _, s1]) do
-          [s0, s1].flat_map {|s| extract_idents(s) }
-        end
-        with(_[:method_add_block, s, _]) do
-          extract_idents(s)
-        end
-        with(_[:hash, s]) do
-          extract_idents(s)
-        end
-        with(_[:assoclist_from_args, ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:bare_assoc_hash, ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:assoc_new, *ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:assoc_splat, s]) do
-          extract_idents(s)
-        end
-        with(_[:array, ss]) do
-          ss ? ss.flat_map {|s| extract_idents(s) } : []
-        end
-        with(_[:string_literal, s]) do
-          extract_idents(s)
-        end
-        with(_[:xstring_literal, _[*ss]]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:string_content, *ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:string_embexpr, _[*ss]]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:regexp_literal, ss, _]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:dyna_symbol, _[*ss]]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:command, *ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:command_call, s0, _, s1, s2]) do
-          [s0, s2, s1].flat_map {|s| extract_idents(s) }
-        end
-        with(_[:assign, _, s]) do
-          extract_idents(s)
-        end
-        with(_[:massign, _, s]) do
-          extract_idents(s)
-        end
-        with(_[:paren, ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:dot2, *ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:dot3, *ss]) do
-          ss.flat_map {|s| extract_idents(s) }
-        end
-        with(_[:aref, s0, s1]) do
-          handle_columnless_ident(extract_idents(s0), :[], extract_idents(s1))
-        end
-        with(_[:var_ref, _[:@kw, "self", _[_, column]]]) do
-          [Ident[:ref, "self", column]]
-        end
-        with(_[:var_ref, _[Or(:@const, :@cvar, :@ivar, :@gvar), ref_name, _[_, column]]]) do
-          [Ident[:ref, ref_name, column]]
-        end
-        with(_[:@ident, method_name, _[_, column]]) do
-          [Ident[:method, method_name, column]]
-        end
-        with(_[:@const, method_name, _[_, column]]) do
-          [Ident[:method, method_name, column]]
-        end
-        with(_) do
+        else
           []
         end
+      when :var_ref
+        _, (tag, ref_name, (_, column)) = sexp
+        case tag
+        when :@kw
+          if ref_name == 'self'
+            [Ident[:ref, 'self', column]]
+          else
+            []
+          end
+        when :@const, :@cvar, :@ivar, :@gvar
+          [Ident[:ref, ref_name, column]]
+        else
+          []
+        end
+      when :@ident, :@const
+        _, method_name, (_, column) = sexp
+        [Ident[:method, method_name, column]]
+      else
+        []
       end
     end
 
