@@ -225,6 +225,8 @@ module PowerAssert
   module_function :start
 end
 
-RubyVM::InstructionSequence.compile_option = {
-  specialized_instruction: false
-}
+if defined? RubyVM
+  RubyVM::InstructionSequence.compile_option = {
+    specialized_instruction: false
+  }
+end
