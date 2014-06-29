@@ -2,6 +2,12 @@
 #
 # Copyright (C) 2014 Kazuki Tsujimoto, All rights reserved.
 
+begin
+  TracePoint.new(:return, :c_return) {}
+rescue
+  raise LoadError, 'Fully compatible TracePoint API required'
+end
+
 require 'power_assert/version'
 
 require 'ripper'
