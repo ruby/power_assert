@@ -210,12 +210,6 @@ module PowerAssert
         with(_[:var_ref, _[Or(:@const, :@cvar, :@ivar, :@gvar), ref_name, _[_, column]]]) do
           [Ident[:ref, ref_name, column]]
         end
-        with(_[:top_const_ref, _[:@const, ref_name, _[_, column]]]) do
-          [Ident[:ref, ref_name, column]]
-        end
-        with(_[:const_path_ref, s, _[:@const, ref_name, _[_, column]]]) do
-          extract_idents(s) + [Ident[:ref, ref_name, column]]
-        end
         with(_[:@ident, method_name, _[_, column]]) do
           [Ident[:method, method_name, column]]
         end

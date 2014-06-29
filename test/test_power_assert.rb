@@ -104,9 +104,6 @@ class TestPowerAssert < Test::Unit::TestCase
     [[[:method, "a", 0], [:method, "b", 4]],
       "a...b"],
 
-    [[[:ref, "A", 2], [:ref, "B", 5], [:ref, "C", 8]],
-      '::A::B::C'],
-
     [[[:method, "b", 5]],
       ':"a#{b}c"'],
   ]
