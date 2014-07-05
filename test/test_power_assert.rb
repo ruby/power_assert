@@ -110,7 +110,7 @@ class TestPowerAssert < Test::Unit::TestCase
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|
     define_method("test_extract_methods_#{'%03d' % idx}") do
-      pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> {} }.(), nil)
+      pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil)
       pa.instance_variable_set(:@line, source)
       pa.instance_variable_set(:@assertion_method_name, 'assertion_message')
       assert_equal expect, pa.send(:extract_idents, Ripper.sexp(source)).map(&:to_a), source

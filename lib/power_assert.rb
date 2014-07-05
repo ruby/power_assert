@@ -132,15 +132,6 @@ module PowerAssert
         [sexp[1], sexp[4], sexp[3]].flat_map {|s| extract_idents(s) }
       when :aref
         handle_columnless_ident(extract_idents(sexp[1]), :[], extract_idents(sexp[2]))
-      when :program
-        _, ((tag0, (tag1, (tag2, (tag3, mname, _)), _), (tag4, _, ss))) = sexp
-        if tag0 == :method_add_block and tag1 == :method_add_arg and tag2 == :fcall and
-            tag3 == :@ident and mname == @assertion_method_name and (tag4 == :brace_block or tag4 == :do_block)
-          ss.flat_map {|s| extract_idents(s) }
-        else
-          _, (s, *) = sexp
-          extract_idents(s)
-        end
       when :method_add_arg
         idents = extract_idents(sexp[1])
         idents[0..-2] + extract_idents(sexp[2]) + [idents[-1]]
@@ -157,6 +148,15 @@ module PowerAssert
           [Ident[@proc_local_variables.include?(name) ? :ref : :method, name, column]]
         else
           []
+        end
+      when :program
+        _, ((tag0, (tag1, (tag2, (tag3, mname, _)), _), (tag4, _, ss))) = sexp
+        if tag0 == :method_add_block and tag1 == :method_add_arg and tag2 == :fcall and
+            tag3 == :@ident and mname == @assertion_method_name and (tag4 == :brace_block or tag4 == :do_block)
+          ss.flat_map {|s| extract_idents(s) }
+        else
+          _, (s, *) = sexp
+          extract_idents(s)
         end
       when :var_ref
         _, (tag, ref_name, (_, column)) = sexp
