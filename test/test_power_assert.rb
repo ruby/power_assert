@@ -118,7 +118,7 @@ class TestPowerAssert < Test::Unit::TestCase
   end
 
   def assertion_message(&blk)
-    ::PowerAssert.start(blk, assertion_method: __method__) do |pa|
+    ::PowerAssert.start(blk, assertion_method: __callee__) do |pa|
       pa.yield
       pa.message_proc.()
     end
