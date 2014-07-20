@@ -20,7 +20,7 @@ module PowerAssert
     Ident = Struct.new(:type, :name, :column)
 
     TARGET_CALLER_DIFF = {return: 5, c_return: 4}
-    TARGET_CALLER_INDEX = {return: 3, c_return: 2}
+    TARGET_INDEX_OFFSET = {bmethod: 3, method: 2}
 
     attr_reader :message_proc
 
@@ -48,8 +48,11 @@ module PowerAssert
       @trace = TracePoint.new(:return, :c_return) do |tp|
         next if method_ids and ! method_ids.include?(tp.method_id)
         locs = tp.binding.eval('caller_locations')
-        if locs.length - @base_caller_length == TARGET_CALLER_DIFF[tp.event]
-          idx = TARGET_CALLER_INDEX[tp.event]
+        current_diff = locs.length - @base_caller_length
+        target_diff = TARGET_CALLER_DIFF[tp.event]
+        is_target_bmethod = current_diff < target_diff
+        if  is_target_bmethod or current_diff == target_diff
+          idx = target_diff - TARGET_INDEX_OFFSET[is_target_bmethod ? :bmethod : :method]
           unless path
             path = locs[idx].path
             lineno = locs[idx].lineno

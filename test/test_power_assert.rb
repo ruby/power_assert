@@ -124,6 +124,10 @@ class TestPowerAssert < Test::Unit::TestCase
     end
   end
 
+  define_method(:bmethod) do
+    false
+  end
+
   def test_assertion_message
     a = 0
     @b = 1
@@ -213,6 +217,14 @@ END
       false
 END
       ! a != (+a == -a)
+    }
+
+    assert_equal <<END.chomp, assertion_message {
+      bmethod
+      |
+      false
+END
+      bmethod
     }
   end
 end
