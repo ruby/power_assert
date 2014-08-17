@@ -9,7 +9,6 @@ rescue
 end
 
 require 'power_assert/version'
-
 require 'ripper'
 
 module PowerAssert
