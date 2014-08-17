@@ -12,8 +12,6 @@ require 'power_assert/version'
 
 require 'ripper'
 
-# NB: API is not fixed
-
 module PowerAssert
   class Context
     Value = Struct.new(:name, :value, :column)
