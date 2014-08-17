@@ -36,13 +36,8 @@ module PowerAssert
       @assertion_proc = assertion_proc
       @assertion_method_name = assertion_method.to_s
       @message_proc = -> {
-        @assertion_message ||=
-          @base_caller_length > 0 ? assertion_message(@line || '',
-                                                      methods || [],
-                                                      return_values,
-                                                      refs || [],
-                                                      assertion_proc.binding).freeze :
-                                    nil
+        return nil if @base_caller_length < 0
+        @message ||= build_assertion_message(@line || '', methods || [], return_values, refs || [], assertion_proc.binding).freeze
       }
       @proc_local_variables = assertion_proc.binding.eval('local_variables').map(&:to_s)
       @trace = TracePoint.new(:return, :c_return) do |tp|
@@ -81,7 +76,7 @@ module PowerAssert
       end
     end
 
-    def assertion_message(line, methods, return_values, refs, proc_binding)
+    def build_assertion_message(line, methods, return_values, refs, proc_binding)
       set_column(line, methods, return_values)
       ref_values = refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] }
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
