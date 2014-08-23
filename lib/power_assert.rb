@@ -43,7 +43,7 @@ module PowerAssert
         current_diff = locs.length - @base_caller_length
         target_diff = TARGET_CALLER_DIFF[tp.event]
         is_target_bmethod = current_diff < target_diff
-        if  is_target_bmethod or current_diff == target_diff
+        if is_target_bmethod or current_diff == target_diff
           idx = target_diff - TARGET_INDEX_OFFSET[is_target_bmethod ? :bmethod : :method]
           unless path
             path = locs[idx].path
