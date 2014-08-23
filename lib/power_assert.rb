@@ -74,7 +74,7 @@ module PowerAssert
     end
 
     def build_assertion_message(line, methods, return_values, refs, proc_binding)
-      set_column(line, methods, return_values)
+      set_column(methods, return_values)
       ref_values = refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] }
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
       if vals.empty?
@@ -93,7 +93,7 @@ module PowerAssert
       ret.join("\n")
     end
 
-    def set_column(line, methods, return_values)
+    def set_column(methods, return_values)
       methods = methods.dup
       return_values.each do |val|
         idx = methods.index {|method| method.name == val.name }
