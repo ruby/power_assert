@@ -7,4 +7,7 @@ Power Assert for Ruby.
 * {test-unit-power_assert}[https://github.com/k-tsj/test-unit-power_assert]
 * {minitest-power_assert}[https://github.com/hsbt/minitest-power_assert]
 
+== Reference
+* {Power Assert in Ruby (at RubyKaigi 2014) // Speaker Deck}[https://speakerdeck.com/k_tsj/power-assert-in-ruby]
+
 == Travis Build Status {<img src="https://secure.travis-ci.org/k-tsj/power_assert.png"/>}[http://travis-ci.org/k-tsj/power_assert]
