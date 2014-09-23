@@ -12,16 +12,22 @@ require 'power_assert/version'
 require 'ripper'
 
 module PowerAssert
-  Configuration  = Struct.new(:lazy_inspection)
+  class << self
+    def configuration
+      @configuration ||= Configuration[false]
+    end
+
+    def configure
+      yield configuration
+    end
+
+    def start(assertion_proc, assertion_method: nil)
+      yield Context.new(assertion_proc, assertion_method)
+    end
+  end
+
+  Configuration = Struct.new(:lazy_inspection)
   private_constant :Configuration
-
-  def self.configuration
-    @configuration ||= Configuration[false]
-  end
-
-  def self.configure
-    yield configuration
-  end
 
   class InspectedValue
     def initialize(value)
@@ -236,11 +242,6 @@ module PowerAssert
     end
   end
   private_constant :Context
-
-  def start(assertion_proc, assertion_method: nil)
-    yield Context.new(assertion_proc, assertion_method)
-  end
-  module_function :start
 end
 
 if defined? RubyVM
