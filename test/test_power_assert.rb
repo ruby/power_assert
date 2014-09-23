@@ -106,6 +106,13 @@ class TestPowerAssert < Test::Unit::TestCase
 
     [[[:method, "b", 5]],
       ':"a#{b}c"'],
+
+    # not supported
+    [[],
+      '->{}.()'],
+
+    [[[:method, "a", 0], [:method, "b", 3], [:method, "call", 2]],
+      'a.(b)'],
   ]
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|

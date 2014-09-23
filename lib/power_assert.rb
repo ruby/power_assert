@@ -149,7 +149,11 @@ module PowerAssert
       when :binary
         handle_columnless_ident(extract_idents(sexp[1]), sexp[2], extract_idents(sexp[3]))
       when :call
-        [sexp[1], sexp[3]].flat_map {|s| extract_idents(s) }
+        if sexp[3] == :call
+          handle_columnless_ident(extract_idents(sexp[1]), :call, [])
+        else
+          [sexp[1], sexp[3]].flat_map {|s| extract_idents(s) }
+        end
       when :array
         sexp[1] ? sexp[1].flat_map {|s| extract_idents(s) } : []
       when :command_call
@@ -158,7 +162,12 @@ module PowerAssert
         handle_columnless_ident(extract_idents(sexp[1]), :[], extract_idents(sexp[2]))
       when :method_add_arg
         idents = extract_idents(sexp[1])
-        idents[0..-2] + extract_idents(sexp[2]) + [idents[-1]]
+        if idents.empty?
+          # idents may be empty(e.g. ->{}.())
+          extract_idents(sexp[2])
+        else
+          idents[0..-2] + extract_idents(sexp[2]) + [idents[-1]]
+        end
       when :args_add_block
         _, (tag, ss0, *ss1), _ = sexp
         if tag == :args_add_star
@@ -216,7 +225,8 @@ module PowerAssert
     MID2SRCTXT = {
       :[] => '[',
       :+@ => '+',
-      :-@ => '-'
+      :-@ => '-',
+      :call => '('
     }
 
     def handle_columnless_ident(left_idents, mid, right_idents)
