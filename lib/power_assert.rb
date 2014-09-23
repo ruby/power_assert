@@ -12,6 +12,28 @@ require 'power_assert/version'
 require 'ripper'
 
 module PowerAssert
+  Configuration  = Struct.new(:lazy_inspection)
+  private_constant :Configuration
+
+  def self.configuration
+    @configuration ||= Configuration[false]
+  end
+
+  def self.configure
+    yield configuration
+  end
+
+  class InspectedValue
+    def initialize(value)
+      @value = value
+    end
+
+    def inspect
+      @value
+    end
+  end
+  private_constant :InspectedValue
+
   class Context
     Value = Struct.new(:name, :value, :column)
     Ident = Struct.new(:type, :name, :column)
@@ -54,7 +76,8 @@ module PowerAssert
             method_ids = methods.map(&:name).map(&:to_sym).uniq
           end
           if path == locs[idx].path and lineno == locs[idx].lineno
-            return_values << Value[tp.method_id.to_s, tp.return_value, nil]
+            val = PowerAssert.configuration.lazy_inspection ? tp.return_value : InspectedValue.new(tp.return_value.inspect)
+            return_values << Value[tp.method_id.to_s, val, nil]
           end
         end
       end
