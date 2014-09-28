@@ -131,6 +131,13 @@ class TestPowerAssert < Test::Unit::TestCase
     end
   end
 
+  def Assertion(&blk)
+    ::PowerAssert.start(blk, assertion_method: __callee__) do |pa|
+      pa.yield
+      pa.message_proc.()
+    end
+  end
+
   define_method(:bmethod) do
     false
   end
@@ -184,6 +191,24 @@ END
                             String
 END
     assertion_message { "0".class }
+
+
+    assert_equal <<END.chomp,
+      "0".class
+          |
+          String
+END
+    Assertion {
+      "0".class
+    }
+
+
+    assert_equal <<END.chomp,
+    Assertion { "0".class }
+                    |
+                    String
+END
+    Assertion { "0".class }
 
 
     assert_equal <<END.chomp, assertion_message {
