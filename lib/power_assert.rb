@@ -186,7 +186,7 @@ module PowerAssert
       when :program
         _, ((tag0, (tag1, (tag2, (tag3, mname, _)), _), (tag4, _, ss))) = sexp
         if tag0 == :method_add_block and tag1 == :method_add_arg and tag2 == :fcall and
-            tag3 == :@ident and mname == @assertion_method_name and (tag4 == :brace_block or tag4 == :do_block)
+            (tag3 == :@ident or tag3 == :@const) and mname == @assertion_method_name and (tag4 == :brace_block or tag4 == :do_block)
           ss.flat_map {|s| extract_idents(s) }
         else
           _, (s, *) = sexp
