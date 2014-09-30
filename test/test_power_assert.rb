@@ -124,6 +124,20 @@ class TestPowerAssert < Test::Unit::TestCase
     end
   end
 
+  class BasicObjectSubclass < BasicObject
+    def inspect
+      "BasicObjectSubclass"
+    end
+
+    def foo
+      "foo"
+    end
+
+    def __foo
+      "foo"
+    end
+  end
+
   def assertion_message(&blk)
     ::PowerAssert.start(blk, assertion_method: __callee__) do |pa|
       pa.yield
@@ -258,6 +272,16 @@ END
 END
       bmethod
     }
+
+
+    assert_equal <<END.chomp,
+      assertion_message { BasicObjectSubclass.new.foo }
+                          |                   |   |
+                          |                   |   "foo"
+                          |                   BasicObjectSubclass
+                          TestPowerAssert::BasicObjectSubclass
+END
+      assertion_message { BasicObjectSubclass.new.foo }
   end
 
   def test_lazy_inspection
