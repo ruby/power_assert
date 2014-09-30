@@ -125,10 +125,6 @@ class TestPowerAssert < Test::Unit::TestCase
   end
 
   class BasicObjectSubclass < BasicObject
-    def inspect
-      "BasicObjectSubclass"
-    end
-
     def foo
       "foo"
     end
@@ -278,7 +274,7 @@ END
       assertion_message { BasicObjectSubclass.new.foo }
                           |                   |   |
                           |                   |   "foo"
-                          |                   BasicObjectSubclass
+                          |                   PowerAssert::InspectationFailure
                           TestPowerAssert::BasicObjectSubclass
 END
       assertion_message { BasicObjectSubclass.new.foo }
