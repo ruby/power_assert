@@ -128,10 +128,6 @@ class TestPowerAssert < Test::Unit::TestCase
     def foo
       "foo"
     end
-
-    def __foo
-      "foo"
-    end
   end
 
   def assertion_message(&blk)
