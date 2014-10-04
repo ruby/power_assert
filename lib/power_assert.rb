@@ -40,6 +40,22 @@ module PowerAssert
   end
   private_constant :InspectedValue
 
+  class SafeInspectable
+    def initialize(value)
+      @value = value
+    end
+
+    def inspect
+      @value.inspect
+    rescue NoMethodError
+      InspectationFailure
+    end
+  end
+  private_constant :SafeInspectable
+
+  class InspectationFailure; end
+  private_constant :InspectationFailure
+
   class Context
     Value = Struct.new(:name, :value, :column)
     Ident = Struct.new(:type, :name, :column)
@@ -68,7 +84,7 @@ module PowerAssert
       target_thread = Thread.current
       @trace = TracePoint.new(:return, :c_return) do |tp|
         next if method_ids and ! method_ids.include?(tp.method_id)
-        locs = tp.binding.eval('caller_locations')
+        locs = tp.binding.eval('::Kernel.caller_locations')
         current_diff = locs.length - @base_caller_length
         target_diff = TARGET_CALLER_DIFF[tp.event]
         is_target_bmethod = current_diff < target_diff
@@ -83,7 +99,9 @@ module PowerAssert
             method_ids = methods.map(&:name).map(&:to_sym).uniq
           end
           if path == locs[idx].path and lineno == locs[idx].lineno
-            val = PowerAssert.configuration.lazy_inspection ? tp.return_value : InspectedValue.new(tp.return_value.inspect)
+            val = PowerAssert.configuration.lazy_inspection ?
+              tp.return_value :
+              InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
             return_values << Value[tp.method_id.to_s, val, nil]
           end
         end
@@ -115,10 +133,10 @@ module PowerAssert
       ret << line.chomp
       ret << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp
       vals.each do |i|
-        ret << sprintf(fmt,
-                       vals.each_with_object({}) do |j, h|
-                         h[j.column.to_s.to_sym] = [i.value.inspect, '|', ' '][i.column <=> j.column]
-                       end).rstrip
+        inspected_vals = vals.each_with_object({}) do |j, h|
+          h[j.column.to_s.to_sym] = [SafeInspectable.new(i.value).inspect, '|', ' '][i.column <=> j.column]
+        end
+        ret << sprintf(fmt, inspected_vals).rstrip
       end
       ret.join("\n")
     end
