@@ -9,9 +9,12 @@ rescue
 end
 
 require 'power_assert/version'
+require 'power_assert/power_assert_friendly_inspection'
 require 'ripper'
 
 module PowerAssert
+  using PowerAssertFriendlyInspection
+
   class << self
     def configuration
       @configuration ||= Configuration[false]
