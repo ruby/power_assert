@@ -13,4 +13,4 @@ Power Assert for Ruby.
 == Reference
 * {Power Assert in Ruby (at RubyKaigi 2014) // Speaker Deck}[https://speakerdeck.com/k_tsj/power-assert-in-ruby]
 
-== Travis Build Status {<img src="https://secure.travis-ci.org/k-tsj/power_assert.png"/>}[http://travis-ci.org/k-tsj/power_assert]
+== Travis Build Status {<img src="https://secure.travis-ci.org/k-tsj/power_assert.png?branch=master"/>}[http://travis-ci.org/k-tsj/power_assert]
