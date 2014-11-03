@@ -9,6 +9,7 @@ rescue
 end
 
 require 'power_assert/version'
+require 'power_assert/enable_tracepoint_events'
 require 'ripper'
 
 module PowerAssert
@@ -271,10 +272,4 @@ module PowerAssert
     end
   end
   private_constant :Context
-end
-
-if defined? RubyVM
-  RubyVM::InstructionSequence.compile_option = {
-    specialized_instruction: false
-  }
 end
