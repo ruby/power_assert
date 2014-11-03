@@ -6,7 +6,7 @@ require 'set'
 class TestPowerAssert < Test::Unit::TestCase
   EXTRACT_METHODS_TEST = [
     [[[:method, "c", 4], [:method, "b", 2], [:method, "d", 8], [:method, "a", 0]],
-      'a(b(c), d))'],
+      'a(b(c), d)'],
 
     [[[:method, "a", 0], [:method, "b", 2], [:method, "d", 6], [:method, "c", 4]],
       'a.b.c(d)'],
