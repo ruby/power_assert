@@ -23,12 +23,30 @@ module PowerAssert
     end
 
     def start(assertion_proc, assertion_method: nil)
-      yield Context.new(assertion_proc, assertion_method)
+      val = yield Context.new(assertion_proc, assertion_method)
+      if respond_to?(:clear_global_method_cache, true)
+        clear_global_method_cache
+      end
+      val
+    end
+
+    private
+
+    if respond_to?(:using, true)
+      def clear_global_method_cache
+        class << Object.new
+          using Empty
+        end
+      end
     end
   end
 
   Configuration = Struct.new(:lazy_inspection)
   private_constant :Configuration
+
+  module Empty
+  end
+  private_constant :Empty
 
   class InspectedValue
     def initialize(value)

@@ -274,6 +274,21 @@ END
                           TestPowerAssert::BasicObjectSubclass
 END
       assertion_message { BasicObjectSubclass.new.foo }
+
+
+    if PowerAssert.respond_to?(:clear_global_method_cache, true)
+      3.times do
+        assert_equal <<END.chomp, assertion_message {
+          String == Array
+          |      |  |
+          |      |  Array
+          |      false
+          String
+END
+          String == Array
+        }
+      end
+    end
   end
 
   def test_lazy_inspection
