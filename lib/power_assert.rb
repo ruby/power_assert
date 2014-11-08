@@ -22,11 +22,11 @@ module PowerAssert
       yield configuration
     end
 
-    def start(assertion_proc, assertion_method: nil)
+    def start(assertion_proc_or_source, assertion_method: nil, source_binding: TOPLEVEL_BINDING)
       if respond_to?(:clear_global_method_cache, true)
         clear_global_method_cache
       end
-      yield Context.new(assertion_proc, assertion_method)
+      yield Context.new(assertion_proc_or_source, assertion_method, source_binding)
     end
 
     private
@@ -83,22 +83,27 @@ module PowerAssert
 
     attr_reader :message_proc
 
-    def initialize(assertion_proc, assertion_method)
+    def initialize(assertion_proc_or_source, assertion_method, source_binding)
+      if assertion_proc_or_source.kind_of?(Proc)
+        @assertion_proc = assertion_proc_or_source
+        @line = nil
+      else
+        @assertion_proc = source_binding.eval "Proc.new {#{assertion_proc_or_source}}"
+        @line = assertion_proc_or_source
+      end
       path = nil
       lineno = nil
-      @line = nil
       methods = nil
       refs = nil
       method_ids = nil
       return_values = []
       @base_caller_length = -1
-      @assertion_proc = assertion_proc
       @assertion_method_name = assertion_method.to_s
       @message_proc = -> {
         return nil if @base_caller_length < 0
-        @message ||= build_assertion_message(@line || '', methods || [], return_values, refs || [], assertion_proc.binding).freeze
+        @message ||= build_assertion_message(@line || '', methods || [], return_values, refs || [], @assertion_proc.binding).freeze
       }
-      @proc_local_variables = assertion_proc.binding.eval('local_variables').map(&:to_s)
+      @proc_local_variables = @assertion_proc.binding.eval('local_variables').map(&:to_s)
       target_thread = Thread.current
       @trace = TracePoint.new(:return, :c_return) do |tp|
         next if method_ids and ! method_ids.include?(tp.method_id)
@@ -111,7 +116,7 @@ module PowerAssert
           unless path
             path = locs[idx].path
             lineno = locs[idx].lineno
-            @line = open(path).each_line.drop(lineno - 1).first
+            @line ||= open(path).each_line.drop(lineno - 1).first
             idents = extract_idents(Ripper.sexp(@line))
             methods, refs = idents.partition {|i| i.type == :method }
             method_ids = methods.map(&:name).map(&:to_sym).uniq

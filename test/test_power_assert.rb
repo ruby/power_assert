@@ -117,7 +117,7 @@ class TestPowerAssert < Test::Unit::TestCase
 
   EXTRACT_METHODS_TEST.each_with_index do |(expect, source), idx|
     define_method("test_extract_methods_#{'%03d' % idx}") do
-      pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil)
+      pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil, TOPLEVEL_BINDING)
       pa.instance_variable_set(:@line, source)
       pa.instance_variable_set(:@assertion_method_name, 'assertion_message')
       assert_equal expect, pa.send(:extract_idents, Ripper.sexp(source)).map(&:to_a), source
@@ -130,8 +130,8 @@ class TestPowerAssert < Test::Unit::TestCase
     end
   end
 
-  def assertion_message(&blk)
-    ::PowerAssert.start(blk, assertion_method: __callee__) do |pa|
+  def assertion_message(source = nil, source_binding = TOPLEVEL_BINDING, &blk)
+    ::PowerAssert.start(source || blk, assertion_method: __callee__, source_binding: source_binding) do |pa|
       pa.yield
       pa.message_proc.()
     end
@@ -289,6 +289,29 @@ END
         }
       end
     end
+
+
+    a = 0
+    @b = 1
+    @@c = 2
+    $d = 3
+    assert_equal <<END.chomp, assertion_message(<<END, binding)
+      String(a) + String(@b) + String(@@c) + String($d)
+      |      |  | |      |   | |      |    | |      |
+      |      |  | |      |   | |      |    | |      3
+      |      |  | |      |   | |      |    | "3"
+      |      |  | |      |   | |      |    "0123"
+      |      |  | |      |   | |      2
+      |      |  | |      |   | "2"
+      |      |  | |      |   "012"
+      |      |  | |      1
+      |      |  | "1"
+      |      |  "01"
+      |      0
+      "0"
+END
+      String(a) + String(@b) + String(@@c) + String($d)
+END
   end
 
   def test_lazy_inspection
