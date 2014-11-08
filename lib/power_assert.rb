@@ -23,16 +23,15 @@ module PowerAssert
     end
 
     def start(assertion_proc, assertion_method: nil)
-      val = yield Context.new(assertion_proc, assertion_method)
       if respond_to?(:clear_global_method_cache, true)
         clear_global_method_cache
       end
-      val
+      yield Context.new(assertion_proc, assertion_method)
     end
 
     private
 
-    if respond_to?(:using, true)
+    if defined?(RubyVM) and respond_to?(:using, true)
       def clear_global_method_cache
         class << Object.new
           using Empty
