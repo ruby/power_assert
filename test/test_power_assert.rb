@@ -276,6 +276,17 @@ END
       assertion_message { BasicObjectSubclass.new.foo }
 
 
+    a = :a
+    assert_equal <<END.chomp, assertion_message {
+      a == :b
+      | |
+      | false
+      :a
+END
+      a == :b
+    }
+
+
     if PowerAssert.respond_to?(:clear_global_method_cache, true)
       3.times do
         assert_equal <<END.chomp, assertion_message {
