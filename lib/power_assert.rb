@@ -151,7 +151,7 @@ module PowerAssert
       if vals.empty?
         return line
       end
-      fmt = (vals[0].column + 1).times.map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
+      fmt = (0..vals[0].column).map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
       ret = []
       ret << line.chomp
       ret << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp
