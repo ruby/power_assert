@@ -298,16 +298,6 @@ END
     }
 
 
-    assert_equal <<END.chomp,
-      assertion_message { BasicObjectSubclass.new.foo }
-                          |                   |   |
-                          |                   |   "foo"
-                          |                   PowerAssert::InspectationFailure
-                          TestPowerAssert::BasicObjectSubclass
-END
-      assertion_message { BasicObjectSubclass.new.foo }
-
-
     a = :a
     assert_equal <<END.chomp, assertion_message {
       a == :b
@@ -331,6 +321,40 @@ END
           String == Array
         }
       end
+    end
+  end
+
+  def test_inspection_failure
+    assert_match Regexp.new(<<END.chomp.gsub('|', "\\|")),
+      assertion_message { BasicObjectSubclass.new.foo }
+                          |                   |   |
+                          |                   |   "foo"
+                          |                   InspectionFailure: NoMethodError: .*
+                          TestPowerAssert::BasicObjectSubclass
+END
+      assertion_message { BasicObjectSubclass.new.foo }
+
+
+    verbose = $VERBOSE
+    default_external = Encoding.default_external
+    default_internal = Encoding.default_internal
+    begin
+      $VERBOSE = nil
+      Encoding.default_external = 'cp932'
+      Encoding.default_internal = 'utf-8'
+      ary = ["\u3042"]
+      assert_match Regexp.new(<<END.chomp), assertion_message {
+        ary.length
+        |   |
+        |   1
+        InspectionFailure: Encoding::CompatibilityError: .*
+END
+        ary.length
+      }
+    ensure
+      Encoding.default_internal = default_internal
+      Encoding.default_external = default_external
+      $VERBOSE = verbose
     end
   end
 

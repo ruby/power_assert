@@ -65,14 +65,11 @@ module PowerAssert
 
     def inspect
       @value.inspect
-    rescue NoMethodError
-      InspectationFailure
+    rescue => e
+      "InspectionFailure: #{e.class}: #{e.message.each_line.first}"
     end
   end
   private_constant :SafeInspectable
-
-  class InspectationFailure; end
-  private_constant :InspectationFailure
 
   class Context
     Value = Struct.new(:name, :value, :column)
