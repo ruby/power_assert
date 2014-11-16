@@ -148,6 +148,38 @@ class TestPowerAssert < Test::Unit::TestCase
     false
   end
 
+  def test_lazy_inspection
+    PowerAssert.configure do |c|
+      assert !c.lazy_inspection
+    end
+    assert_equal <<END.chomp, assertion_message {
+      'a'.sub(/./, 'b').sub!(/./, 'c')
+          |             |
+          |             "c"
+          "b"
+END
+      'a'.sub(/./, 'b').sub!(/./, 'c')
+    }
+
+    PowerAssert.configure do |c|
+      c.lazy_inspection = true
+    end
+    begin
+      assert_equal <<END.chomp, assertion_message {
+        'a'.sub(/./, 'b').sub!(/./, 'c')
+            |             |
+            |             "c"
+            "c"
+END
+        'a'.sub(/./, 'b').sub!(/./, 'c')
+      }
+    ensure
+      PowerAssert.configure do |c|
+        c.lazy_inspection = false
+      end
+    end
+  end
+
   def test_assertion_message
     a = 0
     @b = 1
@@ -300,9 +332,10 @@ END
         }
       end
     end
+  end
 
-
-    a = 0
+  def test_assertion_message_with_string
+    a, = 0, a # suppress "assigned but unused variable" warning
     @b = 1
     @@c = 2
     $d = 3
@@ -323,37 +356,5 @@ END
 END
       String(a) + String(@b) + String(@@c) + String($d)
 END
-  end
-
-  def test_lazy_inspection
-    PowerAssert.configure do |c|
-      assert !c.lazy_inspection
-    end
-    assert_equal <<END.chomp, assertion_message {
-      'a'.sub(/./, 'b').sub!(/./, 'c')
-          |             |
-          |             "c"
-          "b"
-END
-      'a'.sub(/./, 'b').sub!(/./, 'c')
-    }
-
-    PowerAssert.configure do |c|
-      c.lazy_inspection = true
-    end
-    begin
-      assert_equal <<END.chomp, assertion_message {
-        'a'.sub(/./, 'b').sub!(/./, 'c')
-            |             |
-            |             "c"
-            "c"
-END
-        'a'.sub(/./, 'b').sub!(/./, 'c')
-      }
-    ensure
-      PowerAssert.configure do |c|
-        c.lazy_inspection = false
-      end
-    end
   end
 end
