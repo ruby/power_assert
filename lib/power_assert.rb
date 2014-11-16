@@ -64,7 +64,16 @@ module PowerAssert
     end
 
     def inspect
-      @value.inspect
+      inspect = @value.inspect
+      if Encoding.compatible?(Encoding.default_external, inspect)
+        inspect
+      else
+        begin
+          "#{inspect.encode(Encoding.default_external)}(#{inspect.encoding})"
+        rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
+          inspect.force_encoding(Encoding.default_external)
+        end
+      end
     rescue => e
       "InspectionFailure: #{e.class}: #{e.message.each_line.first}"
     end
@@ -156,7 +165,8 @@ module PowerAssert
         inspected_vals = vals.each_with_object({}) do |j, h|
           h[j.column.to_s.to_sym] = [SafeInspectable.new(i.value).inspect, '|', ' '][i.column <=> j.column]
         end
-        ret << sprintf(fmt, inspected_vals).rstrip
+        l = sprintf(fmt, inspected_vals)
+        ret << (l.valid_encoding? ? l.rstrip : l)
       end
       ret.join("\n")
     end

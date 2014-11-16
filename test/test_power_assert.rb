@@ -358,6 +358,38 @@ END
     end
   end
 
+  def test_assertion_message_with_incompatible_encodings
+    if Encoding.default_external == Encoding::UTF_8
+      a = "\u3042"
+      def a.inspect
+        super.encode('utf-16le')
+      end
+      assert_equal <<END.chomp, assertion_message {
+        a + a
+        | | |
+        | | "\u3042"(UTF-16LE)
+        | "\u3042\u3042"
+        "\u3042"(UTF-16LE)
+END
+        a + a
+      }
+    end
+
+
+    a = "\xFF"
+    def a.inspect
+      "\xFF".force_encoding('ascii-8bit')
+    end
+    assert_equal <<END.chomp.b, assertion_message {
+      a.length
+      | |
+      | 1
+      \xFF  
+END
+      a.length
+    }.b
+  end
+
   def test_assertion_message_with_string
     a, = 0, a # suppress "assigned but unused variable" warning
     @b = 1
