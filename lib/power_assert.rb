@@ -165,8 +165,7 @@ module PowerAssert
         inspected_vals = vals.each_with_object({}) do |j, h|
           h[j.column.to_s.to_sym] = [SafeInspectable.new(i.value).inspect, '|', ' '][i.column <=> j.column]
         end
-        l = sprintf(fmt, inspected_vals)
-        ret << (l.valid_encoding? ? l.rstrip : l)
+        ret << encoding_safe_rstrip(sprintf(fmt, inspected_vals))
       end
       ret.join("\n")
     end
@@ -178,6 +177,17 @@ module PowerAssert
         if idx
           val.column = methods.delete_at(idx).column
         end
+      end
+    end
+
+    def encoding_safe_rstrip(str)
+      str.rstrip
+    rescue ArgumentError, Encoding::CompatibilityError
+      enc = str.encoding
+      if enc.ascii_compatible?
+        str.b.rstrip.force_encoding(enc)
+      else
+        str
       end
     end
 

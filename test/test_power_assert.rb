@@ -384,7 +384,7 @@ END
       a.length
       | |
       | 1
-      \xFF  
+      \xFF
 END
       a.length
     }.b
