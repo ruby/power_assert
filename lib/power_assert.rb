@@ -64,14 +64,14 @@ module PowerAssert
     end
 
     def inspect
-      inspect = @value.inspect
-      if Encoding.compatible?(Encoding.default_external, inspect)
-        inspect
+      inspected = @value.inspect
+      if Encoding.compatible?(Encoding.default_external, inspected)
+        inspected
       else
         begin
-          "#{inspect.encode(Encoding.default_external)}(#{inspect.encoding})"
+          "#{inspected.encode(Encoding.default_external)}(#{inspected.encoding})"
         rescue Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError
-          inspect.force_encoding(Encoding.default_external)
+          inspected.force_encoding(Encoding.default_external)
         end
       end
     rescue => e
