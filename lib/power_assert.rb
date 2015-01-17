@@ -1,6 +1,6 @@
 # power_assert.rb
 #
-# Copyright (C) 2014 Kazuki Tsujimoto, All rights reserved.
+# Copyright (C) 2014-2015 Kazuki Tsujimoto, All rights reserved.
 
 begin
   TracePoint.new(:return, :c_return) {}
