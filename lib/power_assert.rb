@@ -3,7 +3,14 @@
 # Copyright (C) 2014-2015 Kazuki Tsujimoto, All rights reserved.
 
 begin
-  TracePoint.new(:return, :c_return) {}
+  captured = false
+  TracePoint.new(:return, :c_return) do |tp|
+    captured = true
+    unless tp.binding and tp.return_value
+      raise
+    end
+  end.enable { __id__ }
+  raise unless captured
 rescue
   raise LoadError, 'Fully compatible TracePoint API required'
 end
