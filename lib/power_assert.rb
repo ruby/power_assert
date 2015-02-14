@@ -146,6 +146,10 @@ module PowerAssert
       do_yield(&@assertion_proc)
     end
 
+    def message
+      @message_proc.()
+    end
+
     private
 
     def do_yield

@@ -133,14 +133,14 @@ class TestPowerAssert < Test::Unit::TestCase
   def assertion_message(source = nil, source_binding = TOPLEVEL_BINDING, &blk)
     ::PowerAssert.start(source || blk, assertion_method: __callee__, source_binding: source_binding) do |pa|
       pa.yield
-      pa.message_proc.()
+      pa.message
     end
   end
 
   def Assertion(&blk)
     ::PowerAssert.start(blk, assertion_method: __callee__) do |pa|
       pa.yield
-      pa.message_proc.()
+      pa.message
     end
   end
 
