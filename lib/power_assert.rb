@@ -38,11 +38,9 @@ module PowerAssert
 
     private
 
-    if defined?(RubyVM) and respond_to?(:using, true)
+    if defined?(RubyVM)
       def clear_global_method_cache
-        class << Object.new
-          using Empty
-        end
+        eval('using PowerAssert.const_get(:Empty)', TOPLEVEL_BINDING)
       end
     end
   end
