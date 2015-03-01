@@ -413,4 +413,10 @@ END
       String(a) + String(@b) + String(@@c) + String($d)
 END
   end
+
+  def test_workaround_for_ruby_2_2
+    assert_nothing_raised do
+      assertion_message { Thread.new {}.join }
+    end
+  end
 end

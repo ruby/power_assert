@@ -118,6 +118,7 @@ module PowerAssert
       target_thread = Thread.current
       @trace = TracePoint.new(:return, :c_return) do |tp|
         next if method_ids and ! method_ids.include?(tp.method_id)
+        next unless tp.binding # workaround for ruby 2.2
         locs = tp.binding.eval('::Kernel.caller_locations')
         current_diff = locs.length - @base_caller_length
         target_diff = TARGET_CALLER_DIFF[tp.event]
