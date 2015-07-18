@@ -12,7 +12,7 @@ if defined? RubyVM
   basic_classes.each do |klass|
     basic_operators.each do |bop|
       if klass.public_method_defined?(bop)
-        klass.instance_method(bop).owner.module_eval do
+        klass.ancestors.find {|i| i.instance_methods(false).index(bop) }.module_eval do
           public bop
         end
       end
