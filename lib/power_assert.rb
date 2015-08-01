@@ -168,16 +168,16 @@ module PowerAssert
         return line
       end
       fmt = (0..vals[0].column).map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
-      ret = []
-      ret << line.chomp
-      ret << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp
+      lines = []
+      lines << line.chomp
+      lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp
       vals.each do |i|
         inspected_vals = vals.each_with_object({}) do |j, h|
           h[j.column.to_s.to_sym] = [SafeInspectable.new(i.value).inspect, '|', ' '][i.column <=> j.column]
         end
-        ret << encoding_safe_rstrip(sprintf(fmt, inspected_vals))
+        lines << encoding_safe_rstrip(sprintf(fmt, inspected_vals))
       end
-      ret.join("\n")
+      lines.join("\n")
     end
 
     def set_column(methods, return_values)
