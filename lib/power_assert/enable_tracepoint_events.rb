@@ -1,29 +1,28 @@
 if defined? RubyVM
-  basic_classes = [
-    Fixnum, Float, String, Array, Hash, Bignum, Symbol, Time, Regexp
-  ]
-
-  basic_operators = [
-    :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=,
-    :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze
-  ]
-
-  # set redefined flag
-  basic_classes.each do |klass|
-    basic_operators.each do |bop|
-      if klass.public_method_defined?(bop)
-        klass.ancestors.find {|i| i.instance_methods(false).index(bop) }.module_eval do
-          public bop
-        end
-      end
-    end
-  end
-
-  # bypass check_cfunc
   verbose = $VERBOSE
   begin
     $VERBOSE = nil
     module PowerAssert
+      # set redefined flag
+      basic_classes = [
+        Fixnum, Float, String, Array, Hash, Bignum, Symbol, Time, Regexp
+      ]
+
+      basic_operators = [
+        :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=,
+        :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze
+      ]
+
+      basic_classes.each do |klass|
+        basic_operators.each do |bop|
+          refine(klass) do
+            define_method(bop) {}
+          end
+        end
+      end
+
+
+      # bypass check_cfunc
       refine BasicObject do
         def !
         end
