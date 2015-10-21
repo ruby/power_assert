@@ -343,7 +343,7 @@ END
       Encoding.default_external = 'cp932'
       Encoding.default_internal = 'utf-8'
       ary = ["\u3042"]
-      assert_match Regexp.new(<<END.chomp), assertion_message {
+      assert_match Regexp.new(<<END.chomp.gsub('|', "\\|")), assertion_message {
         ary.length
         |   |
         |   1
