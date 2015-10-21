@@ -35,11 +35,6 @@ if defined? RubyVM
         def ==
         end
       end
-
-      refine Symbol do
-        def ==
-        end
-      end
     end
   ensure
     $VERBOSE = verbose
