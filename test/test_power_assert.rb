@@ -309,6 +309,16 @@ END
     }
 
 
+    assert_equal <<END.chomp, assertion_message {
+      ! Object
+      | |
+      | Object
+      false
+END
+      ! Object
+    }
+
+
     if PowerAssert.respond_to?(:clear_global_method_cache, true)
       3.times do
         assert_equal <<END.chomp, assertion_message {
