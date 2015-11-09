@@ -13,14 +13,47 @@ if defined? RubyVM
         :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze
       ]
 
-      basic_classes.each do |klass|
-        basic_operators.each do |bop|
-          refine(klass) do
-            define_method(bop) {}
-          end
+      class Bug11182
+        def fixed?
+          true
         end
       end
 
+      refine Bug11182 do
+        def fixed?
+        end
+      end
+
+      class Bug11182Sub < Bug11182
+        alias _fixed? fixed?
+        protected :_fixed?
+      end
+
+      if (Bug11182.new.fixed? rescue false)
+        basic_classes.each do |klass|
+          basic_operators.each do |bop|
+            refine(klass) do
+              define_method(bop) {}
+            end
+          end
+        end
+      else
+        # workaround for https://bugs.ruby-lang.org/issues/11182
+        basic_classes.each do |klass|
+          basic_operators.each do |bop|
+            if klass.public_method_defined?(bop)
+              klass.ancestors.find {|i| i.instance_methods(false).index(bop) }.module_eval do
+                public bop
+              end
+            end
+          end
+        end
+
+        refine Symbol do
+          def ==
+          end
+        end
+      end
 
       # bypass check_cfunc
       refine BasicObject do

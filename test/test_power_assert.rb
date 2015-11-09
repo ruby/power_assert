@@ -429,4 +429,15 @@ END
       assertion_message { Thread.new {}.join }
     end
   end
+
+  class H < Hash
+    alias aref []
+    protected :aref
+  end
+
+  def test_workaround_for_bug11182
+    assert_nothing_raised do
+      {}[:a]
+    end
+  end
 end
