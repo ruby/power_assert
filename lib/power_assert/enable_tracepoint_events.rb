@@ -18,6 +18,7 @@ if defined? RubyVM
           true
         end
       end
+      private_constant :Bug11182
 
       refine Bug11182 do
         def fixed?
@@ -28,6 +29,7 @@ if defined? RubyVM
         alias _fixed? fixed?
         protected :_fixed?
       end
+      private_constant :Bug11182Sub
 
       if (Bug11182.new.fixed? rescue false)
         basic_classes.each do |klass|
