@@ -345,27 +345,18 @@ END
       assertion_message { BasicObjectSubclass.new.foo }
 
 
-    verbose = $VERBOSE
-    default_external = Encoding.default_external
-    default_internal = Encoding.default_internal
-    begin
-      $VERBOSE = nil
-      Encoding.default_external = 'cp932'
-      Encoding.default_internal = 'utf-8'
-      ary = ["\u3042"]
-      assert_match Regexp.new(<<END.chomp.gsub('|', "\\|")), assertion_message {
-        ary.length
-        |   |
-        |   1
-        InspectionFailure: Encoding::CompatibilityError: .*
-END
-        ary.length
-      }
-    ensure
-      Encoding.default_internal = default_internal
-      Encoding.default_external = default_external
-      $VERBOSE = verbose
+    o = Object.new
+    def o.inspect
+      raise
     end
+    assert_equal <<END.chomp.b, assertion_message {
+      o.class
+      | |
+      | Object
+      InspectionFailure: RuntimeError:
+END
+      o.class
+    }
   end
 
   def test_assertion_message_with_incompatible_encodings
