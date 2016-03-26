@@ -22,7 +22,7 @@ require 'ripper'
 module PowerAssert
   class << self
     def configuration
-      @configuration ||= Configuration[false]
+      @configuration ||= Configuration[false, false]
     end
 
     def configure
@@ -45,7 +45,7 @@ module PowerAssert
     end
   end
 
-  Configuration = Struct.new(:lazy_inspection)
+  Configuration = Struct.new(:lazy_inspection, :_trace_alias_method)
   private_constant :Configuration
 
   module Empty
@@ -117,7 +117,10 @@ module PowerAssert
       @proc_local_variables = @assertion_proc.binding.eval('local_variables').map(&:to_s)
       target_thread = Thread.current
       @trace = TracePoint.new(:return, :c_return) do |tp|
-        next if method_ids and ! method_ids.include?(tp.method_id)
+        method_id = (tp.event == :return &&
+                     PowerAssert.configuration._trace_alias_method &&
+                     tp.binding.eval('::Kernel.__callee__')) || tp.method_id
+        next if method_ids and ! method_ids.include?(method_id)
         next unless tp.binding # workaround for ruby 2.2
         locs = tp.binding.eval('::Kernel.caller_locations')
         current_diff = locs.length - @base_caller_length
@@ -137,7 +140,7 @@ module PowerAssert
             val = PowerAssert.configuration.lazy_inspection ?
               tp.return_value :
               InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
-            return_values << Value[tp.method_id.to_s, val, nil]
+            return_values << Value[method_id.to_s, val, nil]
           end
         end
       end

@@ -359,6 +359,44 @@ END
     }
   end
 
+  def test_alias_method
+    PowerAssert.configure do |c|
+      c._trace_alias_method = true
+    end
+    begin
+      o = Class.new do
+        def foo
+          :foo
+        end
+        alias alias_of_iseq foo
+        alias alias_of_cfunc to_s
+      end
+
+      assert_match Regexp.new(<<END.chomp.gsub('|', "\\|")),
+        assertion_message { o.new.alias_of_iseq }
+                            | |   |
+                            | |   :foo
+                            | #<#<Class:.*>:.*>
+                            #<Class:.*>
+END
+        assertion_message { o.new.alias_of_iseq }
+
+      omit 'alias of cfunc is not supported yet'
+      assert_match Regexp.new(<<END.chomp.gsub('|', "\\|")),
+        assertion_message { o.new.alias_of_cfunc }
+                            | |   |
+                            | |   #<#<Class:.*>:.*>
+                            | #<#<Class:.*>:.*>
+                            #<Class:.*>
+END
+        assertion_message { o.new.alias_of_cfunc }
+    ensure
+      PowerAssert.configure do |c|
+        c._trace_alias_method = false
+      end
+    end
+  end
+
   def test_assertion_message_with_incompatible_encodings
     if Encoding.default_external == Encoding::UTF_8
       a = "\u3042"
