@@ -136,6 +136,10 @@ module PowerAssert
                      tp.binding.eval('::Kernel.__callee__')) || tp.method_id
         next if method_ids and ! method_ids[method_id]
         next unless tp.binding # workaround for ruby 2.2
+        if tp.event == :c_return
+          loc = tp.binding.eval('[__LINE__, __FILE__]')
+          next unless lineno == loc[0] and path == loc[1]
+        end
         locs = tp.binding.eval('::Kernel.caller_locations')
         current_diff = locs.length - @base_caller_length
         if current_diff <= TARGET_CALLER_DIFF[tp.event] and Thread.current == target_thread
