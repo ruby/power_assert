@@ -276,7 +276,7 @@ END
         |   #<Set: {}>
         Set
 END
-        Set.new != Set.new([0])
+        Set.new == Set.new([0])
       }
     end
 
