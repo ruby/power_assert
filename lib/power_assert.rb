@@ -90,7 +90,7 @@ module PowerAssert
     Ident = Struct.new(:type, :name, :column)
 
     TARGET_CALLER_DIFF = {return: 5, c_return: 4}
-    TARGET_INDEX_OFFSET = {bmethod: 3, method: 2}
+    TARGET_INDEX_OFFSET = 2
 
     attr_reader :message_proc
 
@@ -118,8 +118,8 @@ module PowerAssert
       target_thread = Thread.current
       @trace_call = TracePoint.new(:call, :c_call) do |tp|
         locs = caller_locations
-        if locs.length >= @base_caller_length + 2 and Thread.current == target_thread
-          idx = -(@base_caller_length + 2)
+        if locs.length >= @base_caller_length+TARGET_INDEX_OFFSET and Thread.current == target_thread
+          idx = -(@base_caller_length+TARGET_INDEX_OFFSET)
           path = locs[idx].path
           lineno = locs[idx].lineno
           @line ||= open(path).each_line.drop(lineno - 1).first
@@ -137,10 +137,8 @@ module PowerAssert
         next unless tp.binding # workaround for ruby 2.2
         locs = tp.binding.eval('::Kernel.caller_locations')
         current_diff = locs.length - @base_caller_length
-        target_diff = TARGET_CALLER_DIFF[tp.event]
-        is_target_bmethod = current_diff < target_diff
-        if (is_target_bmethod or current_diff == target_diff) and Thread.current == target_thread
-          idx = target_diff - TARGET_INDEX_OFFSET[is_target_bmethod ? :bmethod : :method]
+        if current_diff <= TARGET_CALLER_DIFF[tp.event] and Thread.current == target_thread
+          idx = -(@base_caller_length+TARGET_INDEX_OFFSET)
           if path == locs[idx].path and lineno == locs[idx].lineno
             val = PowerAssert.configuration.lazy_inspection ?
               tp.return_value :
