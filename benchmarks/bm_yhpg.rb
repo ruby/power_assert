@@ -48,7 +48,7 @@ end
 ].each do |(actual, expect)|
   Benchmark.bm(40) do |x|
     x.report("expr") { Yhpg.new(actual).output == expect }
-    x.report("TracePoint.trace(:return) { expr }") { TracePoint.new(:return) {}.enable { Yhpg.new(actual).output == expect } }
+    x.report("TracePoint.trace { expr }") { TracePoint.new(:return, :c_return) {}.enable { Yhpg.new(actual).output == expect } }
     x.report("assertion_message { expr }") { assertion_message { Yhpg.new(actual).output == expect } }
     x.report("assertion_message { !expr }") { assertion_message { Yhpg.new(actual).output != expect } }
   end
