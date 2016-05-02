@@ -125,7 +125,7 @@ module PowerAssert
           @line ||= open(path).each_line.drop(lineno - 1).first
           idents = extract_idents(Ripper.sexp(@line))
           methods, refs = idents.partition {|i| i.type == :method }
-          method_ids = methods.map(&:name).map(&:to_sym).uniq
+          method_ids = methods.map(&:name).map(&:to_sym).each_with_object({}) {|i, h| h[i] = true }
           @trace_call.disable
         end
       end
@@ -133,7 +133,7 @@ module PowerAssert
         method_id = (tp.event == :return &&
                      PowerAssert.configuration._trace_alias_method &&
                      tp.binding.eval('::Kernel.__callee__')) || tp.method_id
-        next if method_ids and ! method_ids.include?(method_id)
+        next if method_ids and ! method_ids[method_id]
         next unless tp.binding # workaround for ruby 2.2
         locs = tp.binding.eval('::Kernel.caller_locations')
         current_diff = locs.length - @base_caller_length
