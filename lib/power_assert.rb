@@ -111,7 +111,7 @@ module PowerAssert
       @base_caller_length = -1
       @assertion_method_name = assertion_method.to_s
       @message_proc = -> {
-        return nil if @base_caller_length < 0
+        raise RuntimeError, 'call #yield at first' if @base_caller_length < 0
         @message ||= build_assertion_message(@line || '', methods || [], return_values, refs || [], @assertion_proc.binding).freeze
       }
       @proc_local_variables = @assertion_proc.binding.eval('local_variables').map(&:to_s)
