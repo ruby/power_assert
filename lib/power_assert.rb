@@ -129,9 +129,10 @@ module PowerAssert
           @trace_call.disable
         end
       end
+      trace_alias_method = PowerAssert.configuration._trace_alias_method
       @trace_return = TracePoint.new(:return, :c_return) do |tp|
-        method_id = (tp.event == :return &&
-                     PowerAssert.configuration._trace_alias_method &&
+        method_id = (trace_alias_method &&
+                     tp.event == :return &&
                      tp.binding.eval('::Kernel.__callee__')) || tp.method_id
         next if method_ids and ! method_ids[method_id]
         next unless tp.binding # workaround for ruby 2.2
