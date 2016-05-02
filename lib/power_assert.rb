@@ -116,7 +116,20 @@ module PowerAssert
       }
       @proc_local_variables = @assertion_proc.binding.eval('local_variables').map(&:to_s)
       target_thread = Thread.current
-      @trace = TracePoint.new(:return, :c_return) do |tp|
+      @trace_call = TracePoint.new(:call, :c_call) do |tp|
+        locs = caller_locations
+        if locs.length >= @base_caller_length + 2 and Thread.current == target_thread
+          idx = -(@base_caller_length + 2)
+          path = locs[idx].path
+          lineno = locs[idx].lineno
+          @line ||= open(path).each_line.drop(lineno - 1).first
+          idents = extract_idents(Ripper.sexp(@line))
+          methods, refs = idents.partition {|i| i.type == :method }
+          method_ids = methods.map(&:name).map(&:to_sym).uniq
+          @trace_call.disable
+        end
+      end
+      @trace_return = TracePoint.new(:return, :c_return) do |tp|
         method_id = (tp.event == :return &&
                      PowerAssert.configuration._trace_alias_method &&
                      tp.binding.eval('::Kernel.__callee__')) || tp.method_id
@@ -128,14 +141,6 @@ module PowerAssert
         is_target_bmethod = current_diff < target_diff
         if (is_target_bmethod or current_diff == target_diff) and Thread.current == target_thread
           idx = target_diff - TARGET_INDEX_OFFSET[is_target_bmethod ? :bmethod : :method]
-          unless path
-            path = locs[idx].path
-            lineno = locs[idx].lineno
-            @line ||= open(path).each_line.drop(lineno - 1).first
-            idents = extract_idents(Ripper.sexp(@line))
-            methods, refs = idents.partition {|i| i.type == :method }
-            method_ids = methods.map(&:name).map(&:to_sym).uniq
-          end
           if path == locs[idx].path and lineno == locs[idx].lineno
             val = PowerAssert.configuration.lazy_inspection ?
               tp.return_value :
@@ -157,9 +162,14 @@ module PowerAssert
     private
 
     def do_yield
-      @trace.enable do
-        @base_caller_length = caller_locations.length
-        yield
+      @trace_return.enable do
+        begin
+          @base_caller_length = caller_locations.length
+          @trace_call.enable
+          yield
+        ensure
+          @trace_call.disable
+        end
       end
     end
 
