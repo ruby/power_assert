@@ -117,6 +117,7 @@ module PowerAssert
       @proc_local_variables = @assertion_proc.binding.eval('local_variables').map(&:to_s)
       target_thread = Thread.current
       @trace_call = TracePoint.new(:call, :c_call) do |tp|
+        next if @base_caller_length < 0
         locs = caller_locations
         if locs.length >= @base_caller_length+TARGET_INDEX_OFFSET and Thread.current == target_thread
           idx = -(@base_caller_length+TARGET_INDEX_OFFSET)
@@ -130,7 +131,7 @@ module PowerAssert
         end
       end
       trace_alias_method = PowerAssert.configuration._trace_alias_method
-      @trace_return = TracePoint.new(:return, :c_return) do |tp|
+      @trace = TracePoint.new(:return, :c_return) do |tp|
         method_id = (trace_alias_method &&
                      tp.event == :return &&
                      tp.binding.eval('::Kernel.__callee__')) || tp.method_id
@@ -155,7 +156,9 @@ module PowerAssert
     end
 
     def yield
-      do_yield(&@assertion_proc)
+      @trace_call.enable do
+        do_yield(&@assertion_proc)
+      end
     end
 
     def message
@@ -165,14 +168,9 @@ module PowerAssert
     private
 
     def do_yield
-      @trace_return.enable do
-        begin
-          @base_caller_length = caller_locations.length
-          @trace_call.enable
-          yield
-        ensure
-          @trace_call.disable
-        end
+      @trace.enable do
+        @base_caller_length = caller_locations.length
+        yield
       end
     end
 
