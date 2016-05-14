@@ -1,7 +1,7 @@
 # Yhpg
 #   https://gist.github.com/yancya/37d79e02a91afcfdeed1
 #
-# Auhtor: yancya
+# Author: yancya
 
 require_relative 'helper'
 
