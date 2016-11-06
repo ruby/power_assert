@@ -394,7 +394,7 @@ END
       begin
         PowerAssert.configure do |c|
           c._trace_alias_method = true
-        end
+        end unless PowerAssert.const_get(:SUPPORT_ALIAS_METHOD)
         @o = Class.new do
           def foo
             :foo
@@ -406,7 +406,7 @@ END
       ensure
         PowerAssert.configure do |c|
           c._trace_alias_method = false
-        end
+        end unless PowerAssert.const_get(:SUPPORT_ALIAS_METHOD)
       end
     end
 
@@ -422,11 +422,13 @@ END
     end
 
     t do
-      omit 'alias of cfunc is not supported yet'
+      unless PowerAssert.const_get(:SUPPORT_ALIAS_METHOD)
+        omit 'alias of cfunc is not supported yet'
+      end
       assert_match Regexp.new(<<END.chomp.gsub('|', "\\|")),
         assertion_message { @o.new.alias_of_cfunc }
                             |  |   |
-                            |  |   #<#<Class:.*>:.*>
+                            |  |   "#<#<Class:.*>:.*>"
                             |  #<#<Class:.*>:.*>
                             #<Class:.*>
 END

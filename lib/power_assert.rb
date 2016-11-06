@@ -45,7 +45,17 @@ module PowerAssert
     end
   end
 
-  Configuration = Struct.new(:lazy_inspection, :_trace_alias_method)
+  SUPPORT_ALIAS_METHOD = TracePoint.public_method_defined?(:callee_id)
+  private_constant :SUPPORT_ALIAS_METHOD
+
+  class Configuration < Struct.new(:lazy_inspection, :_trace_alias_method)
+    def _trace_alias_method=(bool)
+      super
+      if SUPPORT_ALIAS_METHOD
+        warn '_trace_alias_method option is obsolete. You no longer have to set it.'
+      end
+    end
+  end
   private_constant :Configuration
 
   module Empty
@@ -132,9 +142,9 @@ module PowerAssert
       end
       trace_alias_method = PowerAssert.configuration._trace_alias_method
       @trace = TracePoint.new(:return, :c_return) do |tp|
-        method_id = (trace_alias_method &&
-                     tp.event == :return &&
-                     tp.binding.eval('::Kernel.__callee__')) || tp.method_id
+        method_id = SUPPORT_ALIAS_METHOD                      ? tp.callee_id :
+                    trace_alias_method && tp.event == :return ? tp.binding.eval('::Kernel.__callee__') :
+                                                                tp.method_id
         next if method_ids and ! method_ids[method_id]
         next if tp.event == :c_return and
                 not (lineno == tp.lineno and path == tp.path)
