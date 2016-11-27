@@ -12,7 +12,7 @@ module PowerAssert
   SUPPORT_ALIAS_METHOD = TracePoint.public_method_defined?(:callee_id)
   private_constant :SUPPORT_ALIAS_METHOD
 
-  class Configuration < Struct.new(:lazy_inspection, :_trace_alias_method, :redefinition)
+  class Configuration < Struct.new(:lazy_inspection, :_trace_alias_method, :_redefinition)
     def _trace_alias_method=(bool)
       super
       if SUPPORT_ALIAS_METHOD

@@ -1,7 +1,7 @@
 require 'power_assert/configuration'
 
 if defined? RubyVM
-  if PowerAssert.configuration.redefinition
+  if PowerAssert.configuration._redefinition
     verbose = $VERBOSE
     begin
       $VERBOSE = nil
