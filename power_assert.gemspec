@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'test-unit'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'simplecov'
+  s.add_development_dependency 'bundler'
   s.extra_rdoc_files = ['README.rdoc']
   s.rdoc_options     = ['--main', 'README.rdoc']
   s.licenses         = ['2-clause BSDL', "Ruby's"]
