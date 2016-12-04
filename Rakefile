@@ -1,11 +1,11 @@
 require "bundler/gem_tasks"
-
 require "rake/testtask"
+
 task :default => :test
-Rake::TestTask.new do |t|
+Rake::TestTask.new(:test) do |t|
   # helper(simplecov) must be required before loading power_assert
-  t.ruby_opts = ["-w", "-r./test/helper"]
-  t.test_files = FileList["test/test_*.rb"]
+  t.ruby_opts = ["-w", "-r./test/test_helper"]
+  t.test_files = FileList["test/**/*_test.rb"]
 end
 
 desc "Run the benchmark suite"

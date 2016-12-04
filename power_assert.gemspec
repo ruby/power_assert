@@ -1,4 +1,6 @@
-$:.push File.expand_path('../lib', __FILE__)
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'power_assert/version'
 
 Gem::Specification.new do |s|
@@ -10,10 +12,12 @@ Gem::Specification.new do |s|
   s.summary     = %q{Power Assert for Ruby}
   s.description = %q{Power Assert for Ruby. Power Assert shows each value of variables and method calls in the expression. It is useful for testing, providing which value wasn't correct when the condition is not satisfied.}
 
-  s.files            = `git ls-files`.split("\n")
-  s.test_files       = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.executables      = `git ls-files -- bin/*`.split("\n").map{|f| File.basename(f) }
-  s.require_paths    = ['lib']
+  s.files         = `git ls-files -z`.split("\x0").reject do |f|
+    f.match(%r{^(test|spec|features|benchmarks)/})
+  end
+  s.bindir        = 'exe'
+  s.executables   = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  s.require_paths = ['lib']
   s.add_development_dependency 'test-unit'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'simplecov'
