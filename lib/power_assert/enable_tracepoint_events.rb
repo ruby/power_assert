@@ -2,6 +2,11 @@ require 'power_assert/configuration'
 
 if defined? RubyVM
   if PowerAssert.configuration._redefinition
+    if RUBY_VERSION == '2.3.2'
+      warn 'power_assert: It is strongly recommended that you use Ruby 2.3.3 or later which fixes regression on 2.3.2.'
+      warn 'power_assert: See https://www.ruby-lang.org/en/news/2016/11/21/ruby-2-3-3-released/ for more details.'
+    end
+
     verbose = $VERBOSE
     begin
       $VERBOSE = nil
