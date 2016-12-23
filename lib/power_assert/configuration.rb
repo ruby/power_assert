@@ -16,7 +16,7 @@ module PowerAssert
     def _trace_alias_method=(bool)
       super
       if SUPPORT_ALIAS_METHOD
-        warn '_trace_alias_method option is obsolete. You no longer have to set it.'
+        warn 'power_assert: _trace_alias_method option is obsolete. You no longer have to set it.'
       end
     end
   end
