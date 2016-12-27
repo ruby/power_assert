@@ -94,15 +94,14 @@ module PowerAssert
       end
       path = nil
       lineno = nil
-      methods = nil
-      refs = nil
+      idents = nil
       method_ids = nil
       return_values = []
       @base_caller_length = -1
       @assertion_method_name = assertion_method.to_s
       @message_proc = -> {
         raise RuntimeError, 'call #yield at first' if @base_caller_length < 0
-        @message ||= build_assertion_message(@line || '', methods || [], return_values, refs || [], @assertion_proc.binding).freeze
+        @message ||= build_assertion_message(@line || '', idents || [], return_values, @assertion_proc.binding).freeze
       }
       @proc_local_variables = @assertion_proc.binding.eval('local_variables').map(&:to_s)
       target_thread = Thread.current
@@ -115,7 +114,7 @@ module PowerAssert
           lineno = locs[idx].lineno
           @line ||= open(path).each_line.drop(lineno - 1).first
           idents = extract_idents(Ripper.sexp(@line))
-          methods, refs = idents.partition {|i| i.type == :method }
+          methods = idents.flatten.find_all {|i| i.type == :method }
           method_ids = methods.map(&:name).map(&:to_sym).each_with_object({}) {|i, h| h[i] = true }
           @trace_call.disable
         end
@@ -162,13 +161,23 @@ module PowerAssert
       end
     end
 
-    def build_assertion_message(line, methods, return_values, refs, proc_binding)
-      set_column(methods, return_values)
+    def build_assertion_message(line, idents, return_values, proc_binding)
+      path = detect_path(idents, return_values)
+      return line unless path
+
+      delete_unidentified_calls(return_values, path)
+      methods, refs = path.partition {|i| i.type == :method }
+      return_values.zip(methods) do |i, j|
+        unless i.name == j.name
+          warn "power_assert: [BUG] Failed to get column: #{i.name}"
+          return line
+        end
+        i.column = j.column
+      end
       ref_values = refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] }
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
-      if vals.empty?
-        return line
-      end
+      return line if vals.empty?
+
       fmt = (0..vals[0].column).map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
       lines = []
       lines << line.chomp
@@ -182,14 +191,42 @@ module PowerAssert
       lines.join("\n")
     end
 
-    def set_column(methods, return_values)
-      methods = methods.dup
-      return_values.each do |val|
-        idx = methods.index {|method| method.name == val.name }
-        if idx
-          val.column = methods.delete_at(idx).column
-        end
+    def detect_path(idents, return_values)
+      all_paths = collect_paths(idents)
+      return all_paths[0] if all_paths.length == 1
+      return_value_names = return_values.map(&:name)
+      detected_paths = all_paths.find_all do |path|
+        return_value_names == path.find_all {|ident| ident.type == :method }.map(&:name)
       end
+      return nil unless detected_paths.length == 1
+      detected_paths[0]
+    end
+
+    def collect_paths(idents, prefixes= [[]], index = 0)
+      if index < idents.length
+        node = idents[index]
+        case node
+        when Array
+          prefixes = node.flat_map {|n| collect_paths(n, prefixes, 0) }
+        else
+          prefixes = prefixes.empty? ? [[node]] : prefixes.map {|prefix| prefix + [node] }
+        end
+        collect_paths(idents, prefixes, index + 1)
+      else
+        prefixes
+      end
+    end
+
+    def delete_unidentified_calls(return_values, path)
+      return_value_num_of_calls = enum_count_by(return_values, &:name)
+      path_num_of_calls = enum_count_by(path.find_all {|ident| ident.type == :method }, &:name)
+      identified_calls = return_value_num_of_calls.find_all {|name, num| path_num_of_calls[name] == num }.map(&:first)
+      return_values.delete_if {|val| ! identified_calls.include?(val.name) }
+      path.delete_if {|ident| ident.type == :method and ! identified_calls.include?(ident.name) }
+    end
+
+    def enum_count_by(enum, &blk)
+      Hash[enum.group_by(&blk).map{|k, v| [k, v.length] }]
     end
 
     def encoding_safe_rstrip(str)
@@ -262,6 +299,9 @@ module PowerAssert
           _, (s, *) = sexp
           extract_idents(s)
         end
+      when :ifop
+        _, s0, s1, s2 = sexp
+        [*extract_idents(s0), [extract_idents(s1), extract_idents(s2)]]
       when :var_ref
         _, (tag, ref_name, (_, column)) = sexp
         case tag

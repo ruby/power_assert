@@ -121,13 +121,22 @@ class TestPowerAssert < Test::Unit::TestCase
 
       [[[:method, "a", 0], [:method, "b", 3], [:method, "call", 2]],
         'a.(b)'],
+
+      [[[:method, "a", 0], [:method, "b", 2],
+          [[[:method, "c", 6], [:method, "d", 8]],
+            [[:method, "e", 12], [:method, "f", 14]]]],
+        'a.b ? c.d : e.f'],
     ].each_with_object({}) {|(expected, source), h| h[source] = [expected, source] }
   end
   def test_extract_methods((expected, source))
     pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil, TOPLEVEL_BINDING)
     pa.instance_variable_set(:@line, source)
     pa.instance_variable_set(:@assertion_method_name, 'assertion_message')
-    assert_equal expected, pa.send(:extract_idents, Ripper.sexp(source)).map(&:to_a), source
+    assert_equal expected, map_recursive(pa.send(:extract_idents, Ripper.sexp(source)), &:to_a), source
+  end
+
+  def map_recursive(ary, &blk)
+    ary.map {|i| Array === i ? map_recursive(i, &blk) : yield(i) }
   end
 
   class BasicObjectSubclass < BasicObject
@@ -343,6 +352,24 @@ END
       }
     end
 
+    t do
+      # TracePoint cannot trace attributes
+      # https://bugs.ruby-lang.org/issues/10470
+      o = Class.new do
+        attr_accessor :to_i
+        def inspect; '#<Class>'; end
+      end.new
+      o.to_i = 0
+      assert_equal <<END.chomp, assertion_message {
+        o.to_i.to_i.to_s
+        |           |
+        |           "0"
+        #<Class>
+END
+        o.to_i.to_i.to_s
+      }
+    end
+
     if PowerAssert.respond_to?(:clear_global_method_cache, true)
       t do
         3.times do
@@ -467,6 +494,54 @@ END
 END
         a.length
       }.b
+    end
+  end
+
+  sub_test_case 'branch' do
+    t do
+      a, b, = 0, 1
+      assert_equal <<END.chomp, assertion_message {
+        a == 0 ? b.to_s : b.to_i
+        | |      | |
+        | |      | "1"
+        | |      1
+        | true
+        0
+END
+        a == 0 ? b.to_s : b.to_i
+      }
+    end
+
+    t do
+      a, b, = 0, 1
+      assert_equal <<END.chomp, assertion_message {
+        a == 1 ? b.to_s : b.to_i
+        | |               | |
+        | |               | 1
+        | |               1
+        | false
+        0
+END
+        a == 1 ? b.to_s : b.to_i
+      }
+    end
+
+    t do
+      assert_equal <<END, assertion_message {
+        false ? 0.to_s : 0.to_s
+END
+        false ? 0.to_s : 0.to_s
+      }
+    end
+
+    t do
+      assert_equal <<END.chomp, assertion_message {
+        false ? 0.to_s.to_i : 0.to_s
+                                |
+                                "0"
+END
+        false ? 0.to_s.to_i : 0.to_s
+      }
     end
   end
 
