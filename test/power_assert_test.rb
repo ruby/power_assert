@@ -126,6 +126,14 @@ class TestPowerAssert < Test::Unit::TestCase
           [[[:method, "c", 6], [:method, "d", 8]],
             [[:method, "e", 12], [:method, "f", 14]]]],
         'a.b ? c.d : e.f'],
+
+      [[[:method, "a", 0],
+          [[[:method, "c", 5], [:method, "b", 3]], []],
+          [:method, "d", 10], [:method, "+", 8]],
+        'a&.b(c) + d'],
+
+      [[[:method, "a", 0], [[[:method, "b", 3]], []], [:method, "c", 5]],
+        'a&.b.c']
     ].each_with_object({}) {|(expected, source), h| h[source] = [expected, source] }
   end
   def test_extract_methods((expected, source))
@@ -541,6 +549,29 @@ END
                                 "0"
 END
         false ? 0.to_s.to_i : 0.to_s
+      }
+    end
+
+    t do
+      assert_equal <<END.chomp, assertion_message {
+        nil&.to_i&.to_s("10".to_i).to_i
+                                   |
+                                   0
+END
+        nil&.to_i&.to_s("10".to_i).to_i
+      }
+    end
+
+    t do
+      assert_equal <<END.chomp, assertion_message {
+        1&.to_i&.to_s("10".to_i).to_i
+           |     |         |     |
+           |     |         |     1
+           |     |         10
+           |     "1"
+           1
+END
+        1&.to_i&.to_s("10".to_i).to_i
       }
     end
   end

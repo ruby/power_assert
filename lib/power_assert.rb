@@ -240,6 +240,13 @@ module PowerAssert
       end
     end
 
+    #
+    # Returns idents as graph structure.
+    #
+    #                                                 +-c-b-+
+    #  extract_idents(Ripper.sexp('a&.b(c).d')) #=> a-+     +-d
+    #                                                 +-----+
+    #
     def extract_idents(sexp)
       tag, * = sexp
       case tag
@@ -257,10 +264,11 @@ module PowerAssert
       when :binary
         handle_columnless_ident(extract_idents(sexp[1]), sexp[2], extract_idents(sexp[3]))
       when :call
+        safe = sexp[2] == :"&."
         if sexp[3] == :call
           handle_columnless_ident(extract_idents(sexp[1]), :call, [])
         else
-          [sexp[1], sexp[3]].flat_map {|s| extract_idents(s) }
+          extract_idents(sexp[1]) + (safe ? [[extract_idents(sexp[3]), []]] : extract_idents(sexp[3]))
         end
       when :array
         sexp[1] ? sexp[1].flat_map {|s| extract_idents(s) } : []
@@ -274,7 +282,12 @@ module PowerAssert
           # idents may be empty(e.g. ->{}.())
           extract_idents(sexp[2])
         else
-          idents[0..-2] + extract_idents(sexp[2]) + [idents[-1]]
+          if idents[-1].kind_of?(Array) and idents[-1][1].empty?
+            # Safe navigation operator is used. See :call clause also.
+            idents[0..-2] + [[extract_idents(sexp[2]) + idents[-1][0], []]]
+          else
+            idents[0..-2] + extract_idents(sexp[2]) + [idents[-1]]
+          end
         end
       when :args_add_block
         _, (tag, ss0, *ss1), _ = sexp
@@ -341,8 +354,8 @@ module PowerAssert
     }
 
     def handle_columnless_ident(left_idents, mid, right_idents)
-      left_max = left_idents.max_by(&:column)
-      right_min = right_idents.min_by(&:column)
+      left_max = left_idents.flatten.max_by(&:column)
+      right_min = right_idents.flatten.min_by(&:column)
       bg = left_max ? left_max.column + left_max.name.length : 0
       ed = right_min ? right_min.column - 1 : @line.length - 1
       mname = mid.to_s
