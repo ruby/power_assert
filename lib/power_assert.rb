@@ -85,8 +85,8 @@ module PowerAssert
     attr_reader :message_proc
 
     def initialize(assertion_proc_or_source, assertion_method, source_binding)
-      if assertion_proc_or_source.kind_of?(Proc)
-        @assertion_proc = assertion_proc_or_source
+      if assertion_proc_or_source.respond_to?(:to_proc)
+        @assertion_proc = assertion_proc_or_source.to_proc
         @line = nil
       else
         @assertion_proc = source_binding.eval "Proc.new {#{assertion_proc_or_source}}"
