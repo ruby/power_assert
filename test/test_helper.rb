@@ -1,4 +1,7 @@
 begin
+  require 'bundler'
+  Bundler.require
+
   if ENV['COVERAGE']
     require 'simplecov'
     SimpleCov.start do
