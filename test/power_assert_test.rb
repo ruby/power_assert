@@ -133,7 +133,10 @@ class TestPowerAssert < Test::Unit::TestCase
         'a&.b(c) + d'],
 
       [[[:method, "a", 0], [[[:method, "b", 3]], []], [:method, "c", 5]],
-        'a&.b.c']
+        'a&.b.c'],
+
+      [[[:method, "a", 0], [[[:method, "b", 4], [:method, "call", 3]], []]],
+        'a&.(b)'],
     ].each_with_object({}) {|(expected, source), h| h[source] = [expected, source] }
   end
   def test_extract_methods((expected, source))

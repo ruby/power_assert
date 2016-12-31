@@ -266,11 +266,11 @@ module PowerAssert
       when :binary
         handle_columnless_ident(extract_idents(sexp[1]), sexp[2], extract_idents(sexp[3]))
       when :call
-        safe = sexp[2] == :"&."
+        with_safe_op = sexp[2] == :"&."
         if sexp[3] == :call
-          handle_columnless_ident(extract_idents(sexp[1]), :call, [])
+          handle_columnless_ident(extract_idents(sexp[1]), :call, [], with_safe_op)
         else
-          extract_idents(sexp[1]) + (safe ? [Branch[extract_idents(sexp[3]), []]] : extract_idents(sexp[3]))
+          extract_idents(sexp[1]) + (with_safe_op ? [Branch[extract_idents(sexp[3]), []]] : extract_idents(sexp[3]))
         end
       when :array
         sexp[1] ? sexp[1].flat_map {|s| extract_idents(s) } : []
@@ -355,7 +355,7 @@ module PowerAssert
       :call => '('
     }
 
-    def handle_columnless_ident(left_idents, mid, right_idents)
+    def handle_columnless_ident(left_idents, mid, right_idents, with_safe_op = false)
       left_max = left_idents.flatten.max_by(&:column)
       right_min = right_idents.flatten.min_by(&:column)
       bg = left_max ? left_max.column + left_max.name.length : 0
@@ -371,9 +371,11 @@ module PowerAssert
       if left_idents.empty? and right_idents.empty?
         left_idents + right_idents
       elsif left_idents.empty?
-        left_idents + right_idents + [Ident[:method, mname, indices.last]]
+        ident = Ident[:method, mname, indices.last]
+        left_idents + right_idents + (with_safe_op ? [Branch[[ident], []]] : [ident])
       else
-        left_idents + right_idents + [Ident[:method, mname, indices.first]]
+        ident = Ident[:method, mname, indices.first]
+        left_idents + right_idents + (with_safe_op ? [Branch[[ident], []]] : [ident])
       end
     end
   end
