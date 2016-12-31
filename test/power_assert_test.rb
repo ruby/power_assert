@@ -86,9 +86,8 @@ class TestPowerAssert < Test::Unit::TestCase
       ['[][]',
         []],
 
-      # not supported
       ['{}[]',
-        []],
+        [[:method, "[]", 2]]],
 
       ['!a',
         [[:method, "a", 1], [:method, "!", 0]]],
@@ -115,8 +114,11 @@ class TestPowerAssert < Test::Unit::TestCase
       [':"a#{b}c"',
         [[:method, "b", 5]]],
 
-      # not supported
       ['->{}.()',
+        [[:method, "call", 5]]],
+
+      # not supported
+      ['->{}.().()',
         []],
 
       ['a.(b)',

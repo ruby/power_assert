@@ -368,14 +368,11 @@ module PowerAssert
         #{'\b' if /\w\z/ =~ srctxt}
       /x
       indices = str_indices(@line, re, bg, ed)
-      if left_idents.empty? and right_idents.empty?
-        left_idents + right_idents
-      elsif left_idents.empty?
-        ident = Ident[:method, mname, indices.last]
+      if indices.length == 1 or !(right_idents.empty? and left_idents.empty?)
+        ident = Ident[:method, mname, right_idents.empty? ? indices.first : indices.last]
         left_idents + right_idents + (with_safe_op ? [Branch[[ident], []]] : [ident])
       else
-        ident = Ident[:method, mname, indices.first]
-        left_idents + right_idents + (with_safe_op ? [Branch[[ident], []]] : [ident])
+        left_idents + right_idents
       end
     end
   end
