@@ -125,6 +125,13 @@ class TestPowerAssert < Test::Unit::TestCase
           [[[:method, "c", 6], [:method, "d", 8]],
             [[:method, "e", 12], [:method, "f", 14]]]],
         [["a", "b", "c", "d"], ["a", "b", "e", "f"]]],
+
+      ['a.b ? (c ? d : e) : f.g',
+        [[:method, "a", 0], [:method, "b", 2],
+          [[[:method, "c", 7],
+              [[[:method, "d", 11]], [[:method, "e", 15]]]],
+            [[:method, "f", 20], [:method, "g", 22]]]],
+        [["a", "b", "c", "d"], ["a", "b", "c", "e"], ["a", "b", "f", "g"]]],
     ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
   def test_extract_methods(*args)
