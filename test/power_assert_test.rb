@@ -122,6 +122,9 @@ class TestPowerAssert < Test::Unit::TestCase
       ['a.(b)',
         [[:method, "a", 0], [:method, "b", 3], [:method, "call", 2]]],
 
+      ['a.[](b)',
+        [[:method, "a", 0], [:method, "b", 5], [:method, "[]", 2]]],
+
       ['a.b ? c.d : e.f',
         [[:method, "a", 0], [:method, "b", 2],
           [[[:method, "c", 6], [:method, "d", 8]],

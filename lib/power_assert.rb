@@ -331,7 +331,7 @@ module PowerAssert
         else
           []
         end
-      when :@ident, :@const
+      when :@ident, :@const, :@op
         _, method_name, (_, column) = sexp
         [Ident[:method, method_name, column]]
       else
