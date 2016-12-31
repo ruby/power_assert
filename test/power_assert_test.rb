@@ -597,7 +597,7 @@ END
     @b = 1
     @@c = 2
     $d = 3
-    assert_equal <<END.chomp, assertion_message(<<END, binding)
+    assert_equal <<ENDA.chomp, assertion_message(<<ENDB, binding)
       String(a) + String(@b) + String(@@c) + String($d)
       |      |  | |      |   | |      |    | |      |
       |      |  | |      |   | |      |    | |      3
@@ -611,9 +611,9 @@ END
       |      |  "01"
       |      0
       "0"
-END
+ENDA
       String(a) + String(@b) + String(@@c) + String($d)
-END
+ENDB
   end
 
   def test_workaround_for_ruby_2_2
