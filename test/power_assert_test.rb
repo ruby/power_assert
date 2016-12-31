@@ -13,131 +13,131 @@ class TestPowerAssert < Test::Unit::TestCase
 
   data do
     [
-      [[[:method, "c", 4], [:method, "b", 2], [:method, "d", 8], [:method, "a", 0]],
-        'a(b(c), d)'],
+      ['a(b(c), d)',
+        [[:method, "c", 4], [:method, "b", 2], [:method, "d", 8], [:method, "a", 0]]],
 
-      [[[:method, "a", 0], [:method, "b", 2], [:method, "d", 6], [:method, "c", 4]],
-        'a.b.c(d)'],
+      ['a.b.c(d)',
+        [[:method, "a", 0], [:method, "b", 2], [:method, "d", 6], [:method, "c", 4]]],
 
-      [[[:method, "b", 2], [:method, "a", 0], [:method, "c", 5], [:method, "e", 9], [:method, "d", 7]],
-        'a(b).c.d(e)'],
+      ['a(b).c.d(e)',
+        [[:method, "b", 2], [:method, "a", 0], [:method, "c", 5], [:method, "e", 9], [:method, "d", 7]]],
 
-      [[[:method, "b", 4], [:method, "a", 2], [:method, "c", 7], [:method, "e", 13], [:method, "g", 11], [:method, "d", 9], [:method, "f", 0]],
-        'f(a(b).c.d(g(e)))'],
+      ['f(a(b).c.d(g(e)))',
+        [[:method, "b", 4], [:method, "a", 2], [:method, "c", 7], [:method, "e", 13], [:method, "g", 11], [:method, "d", 9], [:method, "f", 0]]],
 
-      [[[:method, "c", 5], [:method, "e", 11], [:method, "a", 0]],
-        'a(b: c, d: e)'],
+      ['a(b: c, d: e)',
+        [[:method, "c", 5], [:method, "e", 11], [:method, "a", 0]]],
 
-      [[[:method, "b", 2], [:method, "c", 7], [:method, "d", 10], [:method, "e", 15], [:method, "a", 0]],
-        'a(b => c, d => e)'],
+      ['a(b => c, d => e)',
+        [[:method, "b", 2], [:method, "c", 7], [:method, "d", 10], [:method, "e", 15], [:method, "a", 0]]],
 
-      [[[:method, "b", 4], [:method, "d", 10]],
-        '{a: b, c: d}'],
+      ['{a: b, c: d}',
+        [[:method, "b", 4], [:method, "d", 10]]],
 
-      [[[:method, "a", 1], [:method, "b", 6], [:method, "c", 9], [:method, "d", 14]],
-        '{a => b, c => d}'],
+      ['{a => b, c => d}',
+        [[:method, "a", 1], [:method, "b", 6], [:method, "c", 9], [:method, "d", 14]]],
 
-      [[[:method, "a", 2], [:method, "b", 5], [:method, "c", 10], [:method, "d", 13]],
-        '[[a, b], [c, d]]'],
+      ['[[a, b], [c, d]]',
+        [[:method, "a", 2], [:method, "b", 5], [:method, "c", 10], [:method, "d", 13]]],
 
-      [[[:method, "a", 0], [:method, "b", 2], [:method, "c", 5]],
-        'a b, c { d }'],
+      ['a b, c { d }',
+        [[:method, "a", 0], [:method, "b", 2], [:method, "c", 5]]],
 
-      [[[:method, "a", 20]],
-        'assertion_message { a }'],
+      ['assertion_message { a }',
+        [[:method, "a", 20]]],
 
-      [[[:method, "a", 0]],
-        'a { b }'],
+      ['a { b }',
+        [[:method, "a", 0]]],
 
-      [[[:method, "c", 4], [:method, "B", 2], [:method, "d", 8], [:method, "A", 0]],
-        'A(B(c), d)'],
+      ['A(B(c), d)',
+        [[:method, "c", 4], [:method, "B", 2], [:method, "d", 8], [:method, "A", 0]]],
 
-      [[[:method, "c", 6], [:method, "f", 17], [:method, "h", 25], [:method, "a", 0]],
-        'a(b = c, (d, e = f), G = h)'],
+      ['a(b = c, (d, e = f), G = h)',
+        [[:method, "c", 6], [:method, "f", 17], [:method, "h", 25], [:method, "a", 0]]],
 
-      [[[:method, "b", 2], [:method, "c", 6], [:method, "d", 9], [:method, "e", 12], [:method, "g", 18], [:method, "i", 24], [:method, "j", 29], [:method, "a", 0]],
-        'a(b, *c, d, e, f: g, h: i, **j)'],
+      ['a(b, *c, d, e, f: g, h: i, **j)',
+        [[:method, "b", 2], [:method, "c", 6], [:method, "d", 9], [:method, "e", 12], [:method, "g", 18], [:method, "i", 24], [:method, "j", 29], [:method, "a", 0]]],
 
-      [[[:method, "a", 0], [:method, "b", 5], [:method, "c", 9], [:method, "+", 7], [:method, "==", 2]],
-        'a == b + c'],
+      ['a == b + c',
+        [[:method, "a", 0], [:method, "b", 5], [:method, "c", 9], [:method, "+", 7], [:method, "==", 2]]],
 
-      [[[:ref, "var", 0], [:ref, "var", 8], [:method, "var", 4]],
-        'var.var(var)'],
+      ['var.var(var)',
+        [[:ref, "var", 0], [:ref, "var", 8], [:method, "var", 4]]],
 
-      [[[:ref, "B", 2], [:ref, "@c", 5], [:ref, "@@d", 9], [:ref, "$e", 14], [:method, "f", 18], [:method, "self", 20], [:ref, "self", 26], [:method, "a", 0]],
-        'a(B, @c, @@d, $e, f.self, self)'],
+      ['a(B, @c, @@d, $e, f.self, self)',
+        [[:ref, "B", 2], [:ref, "@c", 5], [:ref, "@@d", 9], [:ref, "$e", 14], [:method, "f", 18], [:method, "self", 20], [:ref, "self", 26], [:method, "a", 0]]],
 
-      [[[:method, "a", 0], [:method, "c", 4], [:method, "b", 2]],
-        'a.b c'],
+      ['a.b c',
+        [[:method, "a", 0], [:method, "c", 4], [:method, "b", 2]]],
 
-      [[[:method, "b", 4]],
-        '"a#{b}c"'],
+      ['"a#{b}c"',
+        [[:method, "b", 4]]],
 
-      [[[:method, "b", 4]],
-        '/a#{b}c/'],
+      ['/a#{b}c/',
+        [[:method, "b", 4]]],
 
-      [[],
-        '[]'],
+      ['[]',
+        []],
 
-      [[[:method, "a", 0], [:method, "[]", 1]],
-        'a[0]'],
-
-      # not supported
-      [[],
-        '[][]'],
+      ['a[0]',
+        [[:method, "a", 0], [:method, "[]", 1]]],
 
       # not supported
-      [[],
-        '{}[]'],
-
-      [[[:method, "a", 1], [:method, "!", 0]],
-        '!a'],
-
-      [[[:method, "a", 1], [:method, "+@", 0]],
-        '+a'],
-
-      [[[:method, "a", 1], [:method, "-@", 0]],
-        '-a'],
-
-      [[[:method, "a", 2], [:method, "!", 0], [:method, "b", 9], [:method, "+@", 8], [:method, "c", 15], [:method, "-@", 14],
-          [:method, "==", 11], [:method, "==", 4]],
-        '! a == (+b == -c)'],
-
-      [[[:method, "b", 6]],
-        '%x{a#{b}c}'],
-
-      [[[:method, "a", 0], [:method, "b", 3]],
-        "a..b"],
-
-      [[[:method, "a", 0], [:method, "b", 4]],
-        "a...b"],
-
-      [[[:method, "b", 5]],
-        ':"a#{b}c"'],
+      ['[][]',
+        []],
 
       # not supported
-      [[],
-        '->{}.()'],
+      ['{}[]',
+        []],
 
-      [[[:method, "a", 0], [:method, "b", 3], [:method, "call", 2]],
-        'a.(b)'],
+      ['!a',
+        [[:method, "a", 1], [:method, "!", 0]]],
 
-      [[[:method, "a", 0], [:method, "b", 2],
+      ['+a',
+        [[:method, "a", 1], [:method, "+@", 0]]],
+
+      ['-a',
+        [[:method, "a", 1], [:method, "-@", 0]]],
+
+      ['! a == (+b == -c)',
+        [[:method, "a", 2], [:method, "!", 0], [:method, "b", 9], [:method, "+@", 8], [:method, "c", 15], [:method, "-@", 14],
+          [:method, "==", 11], [:method, "==", 4]]],
+
+      ['%x{a#{b}c}',
+        [[:method, "b", 6]]],
+
+      ["a..b",
+        [[:method, "a", 0], [:method, "b", 3]]],
+
+      ["a...b",
+        [[:method, "a", 0], [:method, "b", 4]]],
+
+      [':"a#{b}c"',
+        [[:method, "b", 5]]],
+
+      # not supported
+      ['->{}.()',
+        []],
+
+      ['a.(b)',
+        [[:method, "a", 0], [:method, "b", 3], [:method, "call", 2]]],
+
+      ['a.b ? c.d : e.f',
+        [[:method, "a", 0], [:method, "b", 2],
           [[[:method, "c", 6], [:method, "d", 8]],
-            [[:method, "e", 12], [:method, "f", 14]]]],
-        'a.b ? c.d : e.f'],
+            [[:method, "e", 12], [:method, "f", 14]]]]],
 
-      [[[:method, "a", 0],
+      ['a&.b(c) + d',
+        [[:method, "a", 0],
           [[[:method, "c", 5], [:method, "b", 3]], []],
-          [:method, "d", 10], [:method, "+", 8]],
-        'a&.b(c) + d'],
+          [:method, "d", 10], [:method, "+", 8]]],
 
-      [[[:method, "a", 0], [[[:method, "b", 3]], []], [:method, "c", 5]],
-        'a&.b.c'],
+      ['a&.b.c',
+       [[:method, "a", 0], [[[:method, "b", 3]], []], [:method, "c", 5]]],
 
-      [[[:method, "a", 0], [[[:method, "b", 4], [:method, "call", 3]], []]],
-        'a&.(b)'],
-    ].each_with_object({}) {|(expected, source), h| h[source] = [expected, source] }
+      ['a&.(b)',
+       [[:method, "a", 0], [[[:method, "b", 4], [:method, "call", 3]], []]]],
+    ].each_with_object({}) {|(source, expected), h| h[source] = [expected, source] }
   end
   def test_extract_methods((expected, source))
     pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil, TOPLEVEL_BINDING)
