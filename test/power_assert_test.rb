@@ -125,25 +125,33 @@ class TestPowerAssert < Test::Unit::TestCase
       ['a.b ? c.d : e.f',
         [[:method, "a", 0], [:method, "b", 2],
           [[[:method, "c", 6], [:method, "d", 8]],
-            [[:method, "e", 12], [:method, "f", 14]]]]],
+            [[:method, "e", 12], [:method, "f", 14]]]],
+        [["a", "b", "c", "d"], ["a", "b", "e", "f"]]],
 
       ['a&.b(c) + d',
         [[:method, "a", 0],
           [[[:method, "c", 5], [:method, "b", 3]], []],
-          [:method, "d", 10], [:method, "+", 8]]],
+          [:method, "d", 10], [:method, "+", 8]],
+        [["a", "c", "b", "d", "+"], ["a", "d", "+"]]],
 
       ['a&.b.c',
-       [[:method, "a", 0], [[[:method, "b", 3]], []], [:method, "c", 5]]],
+        [[:method, "a", 0], [[[:method, "b", 3]], []], [:method, "c", 5]],
+        [["a", "b", "c"], ["a", "c"]]],
 
       ['a&.(b)',
-       [[:method, "a", 0], [[[:method, "b", 4], [:method, "call", 3]], []]]],
-    ].each_with_object({}) {|(source, expected), h| h[source] = [expected, source] }
+        [[:method, "a", 0], [[[:method, "b", 4], [:method, "call", 3]], []]],
+        [["a", "b", "call"], ["a"]]],
+    ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
-  def test_extract_methods((expected, source))
+  def test_extract_methods((expected_idents, expected_paths, source))
     pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil, TOPLEVEL_BINDING)
     pa.instance_variable_set(:@line, source)
     pa.instance_variable_set(:@assertion_method_name, 'assertion_message')
-    assert_equal expected, map_recursive(pa.send(:extract_idents, Ripper.sexp(source)), &:to_a), source
+    idents = pa.send(:extract_idents, Ripper.sexp(source))
+    assert_equal expected_idents, map_recursive(idents, &:to_a), source
+    if expected_paths
+      assert_equal expected_paths, map_recursive(pa.send(:collect_paths, idents), &:name), source
+    end
   end
 
   def map_recursive(ary, &blk)
