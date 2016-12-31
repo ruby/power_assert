@@ -5,7 +5,14 @@ task :default => :test
 Rake::TestTask.new(:test) do |t|
   # helper(simplecov) must be required before loading power_assert
   t.ruby_opts = ["-w", "-r./test/test_helper"]
-  t.test_files = FileList["test/**/*_test.rb"]
+  t.test_files = FileList["test/**/*_test.rb"].exclude do |i|
+    begin
+      RubyVM::InstructionSequence.compile(open(i).read)
+      false
+    rescue SyntaxError
+      true
+    end
+  end
 end
 
 desc "Run the benchmark suite"

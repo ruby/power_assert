@@ -1,15 +1,8 @@
-require 'test/unit'
-require 'power_assert'
-require 'ripper'
+require_relative 'test_helper'
 require 'set'
 
 class TestPowerAssert < Test::Unit::TestCase
-  class << self
-    def t(msg='', &blk)
-      loc = caller_locations(1, 1)[0]
-      test("#{loc.path} --location #{loc.lineno} #{msg}", &blk)
-    end
-  end
+  include PowerAssertTestHelper
 
   data do
     [
@@ -132,47 +125,15 @@ class TestPowerAssert < Test::Unit::TestCase
           [[[:method, "c", 6], [:method, "d", 8]],
             [[:method, "e", 12], [:method, "f", 14]]]],
         [["a", "b", "c", "d"], ["a", "b", "e", "f"]]],
-
-      ['a&.b(c) + d',
-        [[:method, "a", 0],
-          [[[:method, "c", 5], [:method, "b", 3]], []],
-          [:method, "d", 10], [:method, "+", 8]],
-        [["a", "c", "b", "d", "+"], ["a", "d", "+"]]],
-
-      ['a&.b.c',
-        [[:method, "a", 0], [[[:method, "b", 3]], []], [:method, "c", 5]],
-        [["a", "b", "c"], ["a", "c"]]],
-
-      ['a&.(b)',
-        [[:method, "a", 0], [[[:method, "b", 4], [:method, "call", 3]], []]],
-        [["a", "b", "call"], ["a"]]],
     ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
-  def test_extract_methods((expected_idents, expected_paths, source))
-    pa = PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil, TOPLEVEL_BINDING)
-    pa.instance_variable_set(:@line, source)
-    pa.instance_variable_set(:@assertion_method_name, 'assertion_message')
-    idents = pa.send(:extract_idents, Ripper.sexp(source))
-    assert_equal expected_idents, map_recursive(idents, &:to_a), source
-    if expected_paths
-      assert_equal expected_paths, map_recursive(pa.send(:collect_paths, idents), &:name), source
-    end
-  end
-
-  def map_recursive(ary, &blk)
-    ary.map {|i| Array === i ? map_recursive(i, &blk) : yield(i) }
+  def test_extract_methods(*args)
+    _test_extract_methods(*args)
   end
 
   class BasicObjectSubclass < BasicObject
     def foo
       "foo"
-    end
-  end
-
-  def assertion_message(source = nil, source_binding = TOPLEVEL_BINDING, &blk)
-    ::PowerAssert.start(source || blk, assertion_method: __callee__, source_binding: source_binding) do |pa|
-      pa.yield
-      pa.message
     end
   end
 
@@ -565,29 +526,6 @@ END
                                 "0"
 END
         false ? 0.to_s.to_i : 0.to_s
-      }
-    end
-
-    t do
-      assert_equal <<END.chomp, assertion_message {
-        nil&.to_i&.to_s("10".to_i).to_i
-                                   |
-                                   0
-END
-        nil&.to_i&.to_s("10".to_i).to_i
-      }
-    end
-
-    t do
-      assert_equal <<END.chomp, assertion_message {
-        1&.to_i&.to_s("10".to_i).to_i
-           |     |         |     |
-           |     |         |     1
-           |     |         10
-           |     "1"
-           1
-END
-        1&.to_i&.to_s("10".to_i).to_i
       }
     end
   end
