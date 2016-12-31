@@ -205,8 +205,7 @@ module PowerAssert
     def collect_paths(idents, prefixes= [[]], index = 0)
       if index < idents.length
         node = idents[index]
-        case node
-        when Array
+        if node.kind_of?(Branch)
           prefixes = node.flat_map {|n| collect_paths(n, prefixes, 0) }
         else
           prefixes = prefixes.empty? ? [[node]] : prefixes.map {|prefix| prefix + [node] }
@@ -240,6 +239,9 @@ module PowerAssert
       end
     end
 
+    class Branch < Array
+    end
+
     #
     # Returns idents as graph structure.
     #
@@ -268,7 +270,7 @@ module PowerAssert
         if sexp[3] == :call
           handle_columnless_ident(extract_idents(sexp[1]), :call, [])
         else
-          extract_idents(sexp[1]) + (safe ? [[extract_idents(sexp[3]), []]] : extract_idents(sexp[3]))
+          extract_idents(sexp[1]) + (safe ? [Branch[extract_idents(sexp[3]), []]] : extract_idents(sexp[3]))
         end
       when :array
         sexp[1] ? sexp[1].flat_map {|s| extract_idents(s) } : []
@@ -282,9 +284,9 @@ module PowerAssert
           # idents may be empty(e.g. ->{}.())
           extract_idents(sexp[2])
         else
-          if idents[-1].kind_of?(Array) and idents[-1][1].empty?
+          if idents[-1].kind_of?(Branch) and idents[-1][1].empty?
             # Safe navigation operator is used. See :call clause also.
-            idents[0..-2] + [[extract_idents(sexp[2]) + idents[-1][0], []]]
+            idents[0..-2] + [Branch[extract_idents(sexp[2]) + idents[-1][0], []]]
           else
             idents[0..-2] + extract_idents(sexp[2]) + [idents[-1]]
           end
@@ -314,7 +316,7 @@ module PowerAssert
         end
       when :ifop
         _, s0, s1, s2 = sexp
-        [*extract_idents(s0), [extract_idents(s1), extract_idents(s2)]]
+        [*extract_idents(s0), Branch[extract_idents(s1), extract_idents(s2)]]
       when :var_ref
         _, (tag, ref_name, (_, column)) = sexp
         case tag
