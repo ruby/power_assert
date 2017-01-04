@@ -1,6 +1,6 @@
 # power_assert.rb
 #
-# Copyright (C) 2014-2016 Kazuki Tsujimoto, All rights reserved.
+# Copyright (C) 2014-2017 Kazuki Tsujimoto, All rights reserved.
 
 begin
   captured = false
