@@ -344,22 +344,38 @@ END
       }
     end
 
-    t do
+    sub_test_case 'attribute' do
       # TracePoint cannot trace attributes
       # https://bugs.ruby-lang.org/issues/10470
-      o = Class.new do
-        attr_accessor :to_i
-        def inspect; '#<Class>'; end
-      end.new
-      o.to_i = 0
-      assert_equal <<END.chomp, assertion_message {
-        o.to_i.to_i.to_s
-        |           |
-        |           "0"
-        #<Class>
+      setup do
+        @obj = Class.new do
+          attr_accessor :to_i
+          def inspect; '#<Class>'; end
+        end.new
+        @obj.to_i = 0
+      end
+
+      t do
+        assert_equal <<END.chomp, assertion_message {
+          @obj.to_i.to_i.to_s
+          |              |
+          |              "0"
+          #<Class>
 END
-        o.to_i.to_i.to_s
-      }
+          @obj.to_i.to_i.to_s
+        }
+      end
+
+      t do
+        assert_equal <<END.chomp, assertion_message {
+          true ? @obj.to_i.to_s : @obj.to_i
+                 |         |
+                 |         "0"
+                 #<Class>
+END
+          true ? @obj.to_i.to_s : @obj.to_i
+        }
+      end
     end
 
     if PowerAssert.respond_to?(:clear_global_method_cache, true)

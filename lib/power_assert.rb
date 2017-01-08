@@ -193,13 +193,21 @@ module PowerAssert
 
     def detect_path(idents, return_values)
       all_paths = collect_paths(idents)
-      return all_paths[0] if all_paths.length == 1
       return_value_names = return_values.map(&:name)
+      uniq_calls = uniq_calls(all_paths)
+      uniq_call = return_value_names.find {|i| uniq_calls.include?(i) }
       detected_paths = all_paths.find_all do |path|
-        return_value_names == path.find_all {|ident| ident.type == :method }.map(&:name)
+        methods = path.find_all {|ident| ident.type == :method }.map(&:name)
+        break [path] if uniq_call and methods.include?(uniq_call)
+        return_value_names == methods
       end
       return nil unless detected_paths.length == 1
       detected_paths[0]
+    end
+
+    def uniq_calls(paths)
+      all_calls = enum_count_by(paths.map {|path| path.find_all {|ident| ident.type == :method }.map(&:name).uniq }.flatten) {|i| i }
+      all_calls.find_all {|_, call_count| call_count == 1 }.map {|name, _| name }
     end
 
     def collect_paths(idents, prefixes= [[]], index = 0)
