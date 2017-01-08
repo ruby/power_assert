@@ -210,7 +210,7 @@ module PowerAssert
       all_calls.find_all {|_, call_count| call_count == 1 }.map {|name, _| name }
     end
 
-    def collect_paths(idents, prefixes= [[]], index = 0)
+    def collect_paths(idents, prefixes = [[]], index = 0)
       if index < idents.length
         node = idents[index]
         if node.kind_of?(Branch)
