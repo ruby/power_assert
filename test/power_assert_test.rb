@@ -1,5 +1,6 @@
 require_relative 'test_helper'
 require 'set'
+require 'pry'
 
 class TestPowerAssert < Test::Unit::TestCase
   include PowerAssertTestHelper
@@ -550,6 +551,43 @@ END
 END
         false ? 0.to_s.to_i : 0.to_s
       }
+    end
+  end
+
+  data(
+       '_colorize_message/_use_pp' => [true,  true],
+       '_colorize_message'         => [true, false],
+       '_use_pp'                   => [false, true]
+  )
+  def test_colorized_pp((_colorize_message, _use_pp))
+    begin
+      PowerAssert.configure do |c|
+        c.lazy_inspection = true
+        c._colorize_message = _colorize_message
+        c._use_pp = _use_pp
+      end
+      assert_equal <<END.chomp, Pry::Helpers::Text.strip_color(assertion_message {
+        0 == 0
+          |
+          true
+END
+        0 == 0
+      })
+      if _colorize_message
+        assert_not_equal <<END.chomp, assertion_message {
+          0 == 0
+            |
+            true
+END
+          0 == 0
+        }
+      end
+    ensure
+      PowerAssert.configure do |c|
+        c._use_pp = false
+        c._colorize_message = false
+        c.lazy_inspection = false
+      end
     end
   end
 

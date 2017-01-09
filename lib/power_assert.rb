@@ -75,6 +75,31 @@ module PowerAssert
   end
   private_constant :SafeInspectable
 
+  class Formatter
+    def initialize(value, indent)
+      @value = value
+      @indent = indent
+    end
+
+    def inspect
+      if PowerAssert.configuration._colorize_message
+        if PowerAssert.configuration._use_pp
+          width = [Pry::Terminal.width! - 1 - @indent, 10].max
+          Pry::ColorPrinter.pp(@value, '', width)
+        else
+          Pry::Code.new(@value.inspect).highlighted
+        end
+      else
+        if PowerAssert.configuration._use_pp
+          PP.pp(@value, '')
+        else
+          @value.inspect
+        end
+      end
+    end
+  end
+  private_constant :Formatter
+
   class Context
     Value = Struct.new(:name, :value, :column)
     Ident = Struct.new(:type, :name, :column)
@@ -162,6 +187,10 @@ module PowerAssert
     end
 
     def build_assertion_message(line, idents, return_values, proc_binding)
+      if PowerAssert.configuration._colorize_message
+        line = Pry::Code.new(line).highlighted
+      end
+
       path = detect_path(idents, return_values)
       return line unless path
 
@@ -183,10 +212,13 @@ module PowerAssert
       lines << line.chomp
       lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp
       vals.each do |i|
-        inspected_vals = vals.each_with_object({}) do |j, h|
-          h[j.column.to_s.to_sym] = [SafeInspectable.new(i.value).inspect, '|', ' '][i.column <=> j.column]
+        inspected_val = SafeInspectable.new(Formatter.new(i.value, i.column)).inspect
+        inspected_val.each_line do |l|
+          map_to = vals.each_with_object({}) do |j, h|
+            h[j.column.to_s.to_sym] = [l, '|', ' '][i.column <=> j.column]
+          end
+          lines << encoding_safe_rstrip(sprintf(fmt, map_to))
         end
-        lines << encoding_safe_rstrip(sprintf(fmt, inspected_vals))
       end
       lines.join("\n")
     end
