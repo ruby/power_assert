@@ -223,9 +223,9 @@ module PowerAssert
       uniq_calls = uniq_calls(all_paths)
       uniq_call = return_value_names.find {|i| uniq_calls.include?(i) }
       detected_paths = all_paths.find_all do |path|
-        methods = path.find_all {|ident| ident.type == :method }.map(&:name)
-        break [path] if uniq_call and methods.include?(uniq_call)
-        return_value_names == methods
+        method_names = path.find_all {|ident| ident.type == :method }.map(&:name)
+        break [path] if uniq_call and method_names.include?(uniq_call)
+        return_value_names == method_names
       end
       return nil unless detected_paths.length == 1
       detected_paths[0]
@@ -361,9 +361,9 @@ module PowerAssert
     #
     # Returns idents as graph structure.
     #
-    #                                                 +-c-b-+
-    #  extract_idents(Ripper.sexp('a&.b(c).d')) #=> a-+     +-d
-    #                                                 +-----+
+    #                                                  +--c--b--+
+    #  extract_idents(Ripper.sexp('a&.b(c).d')) #=> a--+        +--d
+    #                                                  +--------+
     #
     def extract_idents(sexp)
       tag, * = sexp

@@ -1,6 +1,6 @@
 require 'power_assert/configuration'
 
-if defined? RubyVM
+if defined?(RubyVM)
   if PowerAssert.configuration._redefinition
     if RUBY_VERSION == '2.3.2'
       warn 'power_assert: It is strongly recommended that you use Ruby 2.3.3 or later which fixes regression on 2.3.2.'
