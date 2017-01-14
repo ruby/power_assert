@@ -124,6 +124,14 @@ class TestBlockContext < Test::Unit::TestCase
       ['a += b',
         [[:method, "b", 5], [:method, "+", 2]]],
 
+      ['a if b',
+        [[:method, "b", 5], [[[:method, "a", 0]], []]],
+        [["b", "a"], ["b"]]],
+
+      ['a unless b',
+        [[:method, "b", 9], [[[:method, "a", 0]], []]],
+        [["b", "a"], ["b"]]],
+
       ['a.b ? c.d : e.f',
         [[:method, "a", 0], [:method, "b", 2],
           [[[:method, "c", 6], [:method, "d", 8]],

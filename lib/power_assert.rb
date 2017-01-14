@@ -436,6 +436,9 @@ module PowerAssert
       when :ifop
         _, s0, s1, s2 = sexp
         [*extract_idents(s0), Branch[extract_idents(s1), extract_idents(s2)]]
+      when :if_mod, :unless_mod
+        _, s0, s1 = sexp
+        [*extract_idents(s0), Branch[extract_idents(s1), []]]
       when :var_ref, :var_field
         _, (tag, ref_name, (_, column)) = sexp
         case tag
