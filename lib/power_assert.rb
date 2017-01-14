@@ -372,6 +372,9 @@ module PowerAssert
         extract_idents(sexp[1])
       when :assign, :massign
         extract_idents(sexp[2])
+      when :opassign
+        _, _, (_, op_name, (_, op_column)), s0 = sexp
+        extract_idents(s0) + [Ident[:method, op_name.sub(/=\z/, ''), op_column]]
       when :assoclist_from_args, :bare_assoc_hash, :dyna_symbol, :paren, :string_embexpr,
         :regexp_literal, :xstring_literal
         sexp[1].flat_map {|s| extract_idents(s) }
@@ -433,7 +436,7 @@ module PowerAssert
       when :ifop
         _, s0, s1, s2 = sexp
         [*extract_idents(s0), Branch[extract_idents(s1), extract_idents(s2)]]
-      when :var_ref
+      when :var_ref, :var_field
         _, (tag, ref_name, (_, column)) = sexp
         case tag
         when :@kw
@@ -442,7 +445,7 @@ module PowerAssert
           else
             []
           end
-        when :@const, :@cvar, :@ivar, :@gvar
+        when :@ident, :@const, :@cvar, :@ivar, :@gvar
           [Ident[:ref, ref_name, column]]
         else
           []
