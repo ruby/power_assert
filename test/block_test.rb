@@ -2,7 +2,7 @@ require_relative 'test_helper'
 require 'set'
 require 'pry'
 
-class TestPowerAssert < Test::Unit::TestCase
+class TestBlockContext < Test::Unit::TestCase
   include PowerAssertTestHelper
 
   data do
@@ -403,7 +403,7 @@ END
                           |                   |   |
                           |                   |   "foo"
                           |                   InspectionFailure: NoMethodError: .*
-                          TestPowerAssert::BasicObjectSubclass
+                          TestBlockContext::BasicObjectSubclass
 END
       assertion_message { BasicObjectSubclass.new.foo }
     end

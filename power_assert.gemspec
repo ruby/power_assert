@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'pry'
+  s.add_development_dependency 'byebug'
   s.extra_rdoc_files = ['README.rdoc']
   s.rdoc_options     = ['--main', 'README.rdoc']
   s.licenses         = ['2-clause BSDL', "Ruby's"]

@@ -26,10 +26,42 @@ module PowerAssert
       if respond_to?(:clear_global_method_cache, true)
         clear_global_method_cache
       end
-      yield Context.new(assertion_proc_or_source, assertion_method, source_binding)
+      yield BlockContext.new(assertion_proc_or_source, assertion_method, source_binding)
+    end
+
+    def trace(frame)
+      begin
+        raise 'Byebug is not started yet' unless Byebug.started?
+      rescue NameError
+        raise "PowerAssert.#{__method__} requires Byebug"
+      end
+      ctx = TraceContext.new(frame._binding)
+      ctx.enable
+      ctx
+    end
+
+    def app_caller_locations
+      filter_locations(caller_locations)
     end
 
     private
+
+    def filter_locations(locs)
+      locs.drop_while {|i| ignored_file?(i.path) }.take_while {|i| ! ignored_file?(i.path) }
+    end
+
+    def ignored_file?(file)
+      @ignored_libs ||= {PowerAssert => lib_dir(PowerAssert, :start, 1)}
+      @ignored_libs[Byebug]    = lib_dir(Byebug, :load_settings, 2)      if defined?(Byebug) and ! @ignored_libs[Byebug]
+      @ignored_libs[PryByebug] = lib_dir(Pry, :start_with_pry_byebug, 2) if defined?(PryByebug) and ! @ignored_libs[PryByebug]
+      @ignored_libs.find do |_, dir|
+        file.start_with?(dir)
+      end
+    end
+
+    def lib_dir(obj, mid, depth)
+      File.expand_path('../' * depth, obj.method(mid).source_location[0])
+    end
 
     if defined?(RubyVM)
       def clear_global_method_cache
@@ -102,62 +134,29 @@ module PowerAssert
 
   class Context
     Value = Struct.new(:name, :value, :column)
-    Ident = Struct.new(:type, :name, :column)
-
-    TARGET_CALLER_DIFF = {return: 5, c_return: 4}
-    TARGET_INDEX_OFFSET = 2
 
     attr_reader :message_proc
 
-    def initialize(assertion_proc_or_source, assertion_method, source_binding)
-      if assertion_proc_or_source.respond_to?(:to_proc)
-        @assertion_proc = assertion_proc_or_source.to_proc
-        @line = nil
-      else
-        @assertion_proc = source_binding.eval "Proc.new {#{assertion_proc_or_source}}"
-        @line = assertion_proc_or_source
-      end
-      path = nil
-      lineno = nil
-      idents = nil
+    def initialize(base_caller_length)
+      @fired = false
+      @target_thread = Thread.current
       method_ids = nil
       return_values = []
-      @base_caller_length = -1
-      @assertion_method_name = assertion_method.to_s
-      @message_proc = -> {
-        raise RuntimeError, 'call #yield at first' if @base_caller_length < 0
-        @message ||= build_assertion_message(@line || '', idents || [], return_values, @assertion_proc.binding).freeze
-      }
-      @proc_local_variables = @assertion_proc.binding.eval('local_variables').map(&:to_s)
-      target_thread = Thread.current
-      @trace_call = TracePoint.new(:call, :c_call) do |tp|
-        next if @base_caller_length < 0
-        locs = caller_locations
-        if locs.length >= @base_caller_length+TARGET_INDEX_OFFSET and Thread.current == target_thread
-          idx = -(@base_caller_length+TARGET_INDEX_OFFSET)
-          path = locs[idx].path
-          lineno = locs[idx].lineno
-          @line ||= open(path).each_line.drop(lineno - 1).first
-          idents = extract_idents(Ripper.sexp(@line))
-          methods = idents.flatten.find_all {|i| i.type == :method }
-          method_ids = methods.map(&:name).map(&:to_sym).each_with_object({}) {|i, h| h[i] = true }
-          @trace_call.disable
-        end
-      end
       trace_alias_method = PowerAssert.configuration._trace_alias_method
       @trace = TracePoint.new(:return, :c_return) do |tp|
+        method_ids ||= @parser.method_ids
         method_id = SUPPORT_ALIAS_METHOD                      ? tp.callee_id :
                     trace_alias_method && tp.event == :return ? tp.binding.eval('::Kernel.__callee__') :
                                                                 tp.method_id
-        next if method_ids and ! method_ids[method_id]
+        next if ! method_ids[method_id]
         next if tp.event == :c_return and
-                not (lineno == tp.lineno and path == tp.path)
+                not (@parser.lineno == tp.lineno and @parser.path == tp.path)
         next unless tp.binding # workaround for ruby 2.2
-        locs = tp.binding.eval('::Kernel.caller_locations')
-        current_diff = locs.length - @base_caller_length
-        if current_diff <= TARGET_CALLER_DIFF[tp.event] and Thread.current == target_thread
-          idx = -(@base_caller_length+TARGET_INDEX_OFFSET)
-          if path == locs[idx].path and lineno == locs[idx].lineno
+        locs = PowerAssert.app_caller_locations
+        diff = locs.length - base_caller_length
+        if (tp.event == :c_return && diff == 1 || tp.event == :return && diff <= 2) and Thread.current == @target_thread
+          idx = -(base_caller_length + 1)
+          if @parser.path == locs[idx].path and @parser.lineno == locs[idx].lineno
             val = PowerAssert.configuration.lazy_inspection ?
               tp.return_value :
               InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
@@ -165,12 +164,10 @@ module PowerAssert
           end
         end
       end
-    end
-
-    def yield
-      @trace_call.enable do
-        do_yield(&@assertion_proc)
-      end
+      @message_proc = -> {
+        raise RuntimeError, 'call #yield at first' unless fired?
+        @message ||= build_assertion_message(@parser.line, @parser.idents, @parser.binding, return_values).freeze
+      }
     end
 
     def message
@@ -179,14 +176,11 @@ module PowerAssert
 
     private
 
-    def do_yield
-      @trace.enable do
-        @base_caller_length = caller_locations.length
-        yield
-      end
+    def fired?
+      @fired
     end
 
-    def build_assertion_message(line, idents, return_values, proc_binding)
+    def build_assertion_message(line, idents, proc_binding, return_values)
       if PowerAssert.configuration._colorize_message
         line = Pry::Code.new(line).highlighted
       end
@@ -224,7 +218,7 @@ module PowerAssert
     end
 
     def detect_path(idents, return_values)
-      all_paths = collect_paths(idents)
+      all_paths = @parser.call_paths
       return_value_names = return_values.map(&:name)
       uniq_calls = uniq_calls(all_paths)
       uniq_call = return_value_names.find {|i| uniq_calls.include?(i) }
@@ -240,20 +234,6 @@ module PowerAssert
     def uniq_calls(paths)
       all_calls = enum_count_by(paths.map {|path| path.find_all {|ident| ident.type == :method }.map(&:name).uniq }.flatten) {|i| i }
       all_calls.find_all {|_, call_count| call_count == 1 }.map {|name, _| name }
-    end
-
-    def collect_paths(idents, prefixes = [[]], index = 0)
-      if index < idents.length
-        node = idents[index]
-        if node.kind_of?(Branch)
-          prefixes = node.flat_map {|n| collect_paths(n, prefixes, 0) }
-        else
-          prefixes = prefixes.empty? ? [[node]] : prefixes.map {|prefix| prefix + [node] }
-        end
-        collect_paths(idents, prefixes, index + 1)
-      else
-        prefixes
-      end
     end
 
     def delete_unidentified_calls(return_values, path)
@@ -278,6 +258,102 @@ module PowerAssert
         str
       end
     end
+  end
+  private_constant :Context
+
+  class BlockContext < Context
+    def initialize(assertion_proc_or_source, assertion_method, source_binding)
+      super(0)
+      if assertion_proc_or_source.respond_to?(:to_proc)
+        @assertion_proc = assertion_proc_or_source.to_proc
+        line = nil
+      else
+        @assertion_proc = source_binding.eval "Proc.new {#{assertion_proc_or_source}}"
+        line = assertion_proc_or_source
+      end
+      @parser = Parser::DUMMY
+      @trace_call = TracePoint.new(:call, :c_call) do |tp|
+        if Thread.current == @target_thread
+          @trace_call.disable
+          locs = PowerAssert.app_caller_locations
+          path = locs.last.path
+          lineno = locs.last.lineno
+          line ||= open(path).each_line.drop(lineno - 1).first
+          @parser = Parser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s)
+        end
+      end
+    end
+
+    def yield
+      @fired = true
+      do_yield(&@assertion_proc)
+    end
+
+    private
+
+    def do_yield
+      @trace.enable do
+        @trace_call.enable do
+          yield
+        end
+      end
+    end
+  end
+  private_constant :BlockContext
+
+  class TraceContext < Context
+    def initialize(binding)
+      target_frame, *base = PowerAssert.app_caller_locations
+      super(base.length)
+      path = target_frame.path
+      lineno = target_frame.lineno
+      line = open(path).each_line.drop(lineno - 1).first
+      @parser = Parser.new(line, path, lineno, binding)
+    end
+
+    def enable
+      @fired = true
+      @trace.enable
+    end
+
+    def disable
+      @trace.disable
+    end
+
+    def enabled?
+      @trace.enabled?
+    end
+  end
+  private_constant :TraceContext
+
+  class Parser
+    Ident = Struct.new(:type, :name, :column)
+
+    attr_reader :line, :path, :lineno, :binding
+
+    def initialize(line, path, lineno, binding, assertion_method_name = nil)
+      @line = line
+      @path = path
+      @lineno = lineno
+      @binding = binding
+      @proc_local_variables = binding.eval('local_variables').map(&:to_s)
+      @assertion_method_name = assertion_method_name
+    end
+
+    def idents
+      @idents ||= extract_idents(Ripper.sexp(@line))
+    end
+
+    def call_paths
+      collect_paths(idents)
+    end
+
+    def method_ids
+      methods = idents.flatten.find_all {|i| i.type == :method }
+      methods.map(&:name).map(&:to_sym).each_with_object({}) {|i, h| h[i] = true }
+    end
+
+    private
 
     class Branch < Array
     end
@@ -415,6 +491,35 @@ module PowerAssert
         left_idents + right_idents
       end
     end
+
+    def collect_paths(idents, prefixes = [[]], index = 0)
+      if index < idents.length
+        node = idents[index]
+        if node.kind_of?(Branch)
+          prefixes = node.flat_map {|n| collect_paths(n, prefixes, 0) }
+        else
+          prefixes = prefixes.empty? ? [[node]] : prefixes.map {|prefix| prefix + [node] }
+        end
+        collect_paths(idents, prefixes, index + 1)
+      else
+        prefixes
+      end
+    end
+
+    class DummyParser < Parser
+      def initialize
+        super('', nil, nil, TOPLEVEL_BINDING)
+      end
+
+      def idents
+        []
+      end
+
+      def call_paths
+        []
+      end
+    end
+    DUMMY = DummyParser.new
   end
-  private_constant :Context
+  private_constant :Parser
 end

@@ -15,6 +15,8 @@ end
 require 'test/unit'
 require 'power_assert'
 require 'ripper'
+require 'byebug'
+require_relative 'test_core_ext_helper'
 
 module PowerAssertTestHelper
   class << self
@@ -33,13 +35,11 @@ module PowerAssertTestHelper
   private
 
   def _test_extract_methods((expected_idents, expected_paths, source))
-    pa = ::PowerAssert.const_get(:Context).new(-> { var = nil; -> { var } }.(), nil, TOPLEVEL_BINDING)
-    pa.instance_variable_set(:@line, source)
-    pa.instance_variable_set(:@assertion_method_name, 'assertion_message')
-    idents = pa.send(:extract_idents, Ripper.sexp(source))
+    parser = ::PowerAssert.const_get(:Parser).new(source, '', 1, -> { var = nil; -> { var } }.().binding, 'assertion_message')
+    idents = parser.idents
     assert_equal expected_idents, map_recursive(idents, &:to_a), source
     if expected_paths
-      assert_equal expected_paths, map_recursive(pa.send(:collect_paths, idents), &:name), source
+      assert_equal expected_paths, map_recursive(parser.call_paths, &:name), source
     end
   end
 
