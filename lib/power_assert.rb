@@ -345,7 +345,7 @@ module PowerAssert
     end
 
     def call_paths
-      collect_paths(idents)
+      collect_paths(idents).uniq
     end
 
     def method_ids

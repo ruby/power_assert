@@ -144,6 +144,10 @@ class TestBlockContext < Test::Unit::TestCase
               [[[:method, "d", 11]], [[:method, "e", 15]]]],
             [[:method, "f", 20], [:method, "g", 22]]]],
         [["a", "b", "c", "d"], ["a", "b", "c", "e"], ["a", "b", "f", "g"]]],
+
+      ['a ? 0 : 0',
+        [[:method, "a", 0], [[], []]],
+        [["a"]]],
     ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
   def test_extract_methods(*args)
@@ -386,6 +390,16 @@ END
                  #<Class>
 END
           true ? @obj.to_i.to_s : @obj.to_i
+        }
+      end
+
+      t do
+        assert_equal <<END.chomp, assertion_message {
+          0 == 0 ? 1 : 2
+            |
+            true
+END
+          0 == 0 ? 1 : 2
         }
       end
     end
