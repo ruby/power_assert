@@ -333,6 +333,7 @@ module PowerAssert
 
     def initialize(line, path, lineno, binding, assertion_method_name = nil)
       @line = line
+      @line_for_parsing = valid_syntax?(line) ? line : slice_expression(line)
       @path = path
       @lineno = lineno
       @binding = binding
@@ -341,7 +342,7 @@ module PowerAssert
     end
 
     def idents
-      @idents ||= extract_idents(Ripper.sexp(@line))
+      @idents ||= extract_idents(Ripper.sexp(@line_for_parsing))
     end
 
     def call_paths
@@ -354,6 +355,24 @@ module PowerAssert
     end
 
     private
+
+    def valid_syntax?(str)
+      verbose, $VERBOSE = $VERBOSE, nil
+      RubyVM::InstructionSequence.compile(str)
+      true
+    rescue SyntaxError
+      false
+    ensure
+      $VERBOSE = verbose
+    end
+
+    def slice_expression(str)
+      str = str.chomp
+      str.sub!(/\A\s*(?:if|unless|elsif|case) /) {|i| ' ' * i.length }
+      str.sub!(/\A\s*(?:\}|end)?\./) {|i| ' ' * i.length }
+      str.sub!(/[\.\\]\z/, '')
+      str
+    end
 
     class Branch < Array
     end
@@ -481,7 +500,7 @@ module PowerAssert
       left_max = left_idents.flatten.max_by(&:column)
       right_min = right_idents.flatten.min_by(&:column)
       bg = left_max ? left_max.column + left_max.name.length : 0
-      ed = right_min ? right_min.column - 1 : @line.length - 1
+      ed = right_min ? right_min.column - 1 : @line_for_parsing.length - 1
       mname = mid.to_s
       srctxt = MID2SRCTXT[mid] || mname
       re = /
@@ -489,7 +508,7 @@ module PowerAssert
         #{Regexp.escape(srctxt)}
         #{'\b' if /\w\z/ =~ srctxt}
       /x
-      indices = str_indices(@line, re, bg, ed)
+      indices = str_indices(@line_for_parsing, re, bg, ed)
       if indices.length == 1 or !(right_idents.empty? and left_idents.empty?)
         ident = Ident[:method, mname, right_idents.empty? ? indices.first : indices.last]
         left_idents + right_idents + (with_safe_op ? [Branch[[ident], []]] : [ident])

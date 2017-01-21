@@ -148,6 +148,18 @@ class TestBlockContext < Test::Unit::TestCase
       ['a ? 0 : 0',
         [[:method, "a", 0], [[], []]],
         [["a"]]],
+
+      # recoverable invalid syntax
+      ['if a',
+        [[:method, "a", 3]]],
+
+      # recoverable invalid syntax
+      ['end.a',
+        [[:method, "a", 4]]],
+
+      # recoverable invalid syntax
+      ['a.',
+        [[:method, "a", 0]]],
     ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
   def test_extract_methods(*args)
