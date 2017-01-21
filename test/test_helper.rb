@@ -34,7 +34,7 @@ module PowerAssertTestHelper
 
   private
 
-  def _test_extract_methods((expected_idents, expected_paths, source))
+  def _test_parser((expected_idents, expected_paths, source))
     parser = ::PowerAssert.const_get(:Parser).new(source, '', 1, -> { var = nil; -> { var } }.().binding, 'assertion_message')
     idents = parser.idents
     assert_equal expected_idents, map_recursive(idents, &:to_a), source

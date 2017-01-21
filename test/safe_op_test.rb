@@ -20,8 +20,8 @@ class TestSafeOp < Test::Unit::TestCase
         [["a", "b", "call"], ["a"]]],
     ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
-  def test_extract_methods(*args)
-    _test_extract_methods(*args)
+  def test_parser(*args)
+    _test_parser(*args)
   end
 
   sub_test_case 'branch' do
