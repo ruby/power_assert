@@ -158,12 +158,12 @@ module PowerAssert
 
     def yield
       @fired = true
-      do_yield(&@assertion_proc)
+      invoke_yield(&@assertion_proc)
     end
 
     private
 
-    def do_yield
+    def invoke_yield
       @trace_return.enable do
         @trace_call.enable do
           yield
