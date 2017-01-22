@@ -37,7 +37,7 @@ module PowerAssert
         end
       end
       @message_proc = -> {
-        raise RuntimeError, 'call #yield at first' unless fired?
+        raise RuntimeError, 'call #yield or #enable at first' unless fired?
         @message ||= build_assertion_message(@parser.line, @parser.idents, @parser.binding, return_values).freeze
       }
     end
