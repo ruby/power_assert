@@ -46,7 +46,7 @@ module PowerAssert
     end
 
     def app_caller_locations
-      filter_locations(caller_locations)
+      caller_locations.drop_while {|i| ignored_file?(i.path) }.take_while {|i| ! ignored_file?(i.path) }
     end
 
     def app_context?
@@ -55,10 +55,6 @@ module PowerAssert
     end
 
     private
-
-    def filter_locations(locs)
-      locs.drop_while {|i| ignored_file?(i.path) }.take_while {|i| ! ignored_file?(i.path) }
-    end
 
     def ignored_file?(file)
       IGNORED_LIBS[Byebug]    = lib_dir(Byebug, :load_settings, 2)      if defined?(Byebug) and ! IGNORED_LIBS[Byebug]
