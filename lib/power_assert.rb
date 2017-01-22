@@ -22,6 +22,10 @@ require 'power_assert/configuration'
 require 'power_assert/context'
 
 module PowerAssert
+  POWER_ASSERT_LIB_DIR = __dir__
+  IGNORED_LIBS = {PowerAssert => POWER_ASSERT_LIB_DIR}
+  private_constant :POWER_ASSERT_LIB_DIR, :IGNORED_LIBS
+
   class << self
     def start(assertion_proc_or_source, assertion_method: nil, source_binding: TOPLEVEL_BINDING)
       if respond_to?(:clear_global_method_cache, true)
@@ -45,6 +49,11 @@ module PowerAssert
       filter_locations(caller_locations)
     end
 
+    def app_context?
+      top_frame = caller_locations.drop_while {|i| i.path.start_with?(POWER_ASSERT_LIB_DIR) }.first
+      top_frame && ! ignored_file?(top_frame.path)
+    end
+
     private
 
     def filter_locations(locs)
@@ -52,10 +61,9 @@ module PowerAssert
     end
 
     def ignored_file?(file)
-      @ignored_libs ||= {PowerAssert => lib_dir(PowerAssert, :start, 1)}
-      @ignored_libs[Byebug]    = lib_dir(Byebug, :load_settings, 2)      if defined?(Byebug) and ! @ignored_libs[Byebug]
-      @ignored_libs[PryByebug] = lib_dir(Pry, :start_with_pry_byebug, 2) if defined?(PryByebug) and ! @ignored_libs[PryByebug]
-      @ignored_libs.find do |_, dir|
+      IGNORED_LIBS[Byebug]    = lib_dir(Byebug, :load_settings, 2)      if defined?(Byebug) and ! IGNORED_LIBS[Byebug]
+      IGNORED_LIBS[PryByebug] = lib_dir(Pry, :start_with_pry_byebug, 2) if defined?(PryByebug) and ! IGNORED_LIBS[PryByebug]
+      IGNORED_LIBS.find do |_, dir|
         file.start_with?(dir)
       end
     end
