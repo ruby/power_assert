@@ -15,7 +15,7 @@ module PowerAssert
       method_id_set = nil
       return_values = []
       trace_alias_method = PowerAssert.configuration._trace_alias_method
-      @trace = TracePoint.new(:return, :c_return) do |tp|
+      @trace_return = TracePoint.new(:return, :c_return) do |tp|
         method_id_set ||= @parser.method_id_set
         method_id = SUPPORT_ALIAS_METHOD                      ? tp.callee_id :
                     trace_alias_method && tp.event == :return ? tp.binding.eval('::Kernel.__callee__') :
@@ -164,7 +164,7 @@ module PowerAssert
     private
 
     def do_yield
-      @trace.enable do
+      @trace_return.enable do
         @trace_call.enable do
           yield
         end
@@ -185,15 +185,15 @@ module PowerAssert
 
     def enable
       @fired = true
-      @trace.enable
+      @trace_return.enable
     end
 
     def disable
-      @trace.disable
+      @trace_return.disable
     end
 
     def enabled?
-      @trace.enabled?
+      @trace_return.enabled?
     end
   end
   private_constant :TraceContext
