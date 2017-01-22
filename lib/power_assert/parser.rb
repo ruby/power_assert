@@ -24,7 +24,7 @@ module PowerAssert
       collect_paths(idents).uniq
     end
 
-    def method_ids
+    def method_id_set
       methods = idents.flatten.find_all {|i| i.type == :method }
       methods.map(&:name).map(&:to_sym).each_with_object({}) {|i, h| h[i] = true }
     end

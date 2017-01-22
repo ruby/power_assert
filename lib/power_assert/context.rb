@@ -12,15 +12,15 @@ module PowerAssert
     def initialize(base_caller_length)
       @fired = false
       @target_thread = Thread.current
-      method_ids = nil
+      method_id_set = nil
       return_values = []
       trace_alias_method = PowerAssert.configuration._trace_alias_method
       @trace = TracePoint.new(:return, :c_return) do |tp|
-        method_ids ||= @parser.method_ids
+        method_id_set ||= @parser.method_id_set
         method_id = SUPPORT_ALIAS_METHOD                      ? tp.callee_id :
                     trace_alias_method && tp.event == :return ? tp.binding.eval('::Kernel.__callee__') :
                                                                 tp.method_id
-        next if ! method_ids[method_id]
+        next if ! method_id_set[method_id]
         next if tp.event == :c_return and
                 not (@parser.lineno == tp.lineno and @parser.path == tp.path)
         next unless tp.binding # workaround for ruby 2.2
