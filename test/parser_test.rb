@@ -146,33 +146,34 @@ class TestParser < Test::Unit::TestCase
       ['a ? 0 : 0',
         [[:method, "a", 0], [[], []]],
         [["a"]]],
+    ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
+  end
+  def test_valid_syntax(*args)
+    _test_parser(*args)
+  end
 
-      # recoverable invalid syntax
+  data do
+    [
       ['if a',
         [[:method, "a", 3]]],
 
-      # recoverable invalid syntax
       ['end.a',
         [[:method, "a", 4]]],
 
-      # recoverable invalid syntax
       ['a.',
         [[:method, "a", 0]]],
 
-      # recoverable invalid syntax
       ['a&&',
         [[:method, "a", 0]]],
 
-      # recoverable invalid syntax
       ['a||',
         [[:method, "a", 0]]],
 
-      # recoverable invalid syntax
       ['a do',
         [[:method, "a", 0]]],
     ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
-  def test_parser(*args)
+  def test_recoverable_invalid_syntax(*args)
     _test_parser(*args)
   end
 end
