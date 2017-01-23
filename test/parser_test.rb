@@ -149,6 +149,14 @@ class TestParser < Test::Unit::TestCase
       ['a ? 0 : 0',
         [[:method, "a", 0], [[], []]],
         [["a"]]],
+
+      ['a && b || c',
+        [[:method, "a", 0], [[[:method, "b", 5]], []], [[[:method, "c", 10]], []]],
+        [["a", "b", "c"], ["a", "c"], ["a", "b"], ["a"]]],
+
+      ['a and b or c',
+        [[:method, "a", 0], [[[:method, "b", 6]], []], [[[:method, "c", 11]], []]],
+        [["a", "b", "c"], ["a", "c"], ["a", "b"], ["a"]]],
     ].each_with_object({}) {|(source, expected_idents, expected_paths), h| h[source] = [expected_idents, expected_paths, source] }
   end
   def test_valid_syntax(*args)

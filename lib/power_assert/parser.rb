@@ -54,6 +54,8 @@ module PowerAssert
     class Branch < Array
     end
 
+    AND_OR_OPS = %i(and or && ||)
+
     #
     # Returns idents as graph structure.
     #
@@ -81,7 +83,12 @@ module PowerAssert
       when :unary
         handle_columnless_ident([], sexp[1], extract_idents(sexp[2]))
       when :binary
-        handle_columnless_ident(extract_idents(sexp[1]), sexp[2], extract_idents(sexp[3]))
+        op = sexp[2]
+        if AND_OR_OPS.include?(op)
+          extract_idents(sexp[1]) + [Branch[extract_idents(sexp[3]), []]]
+        else
+          handle_columnless_ident(extract_idents(sexp[1]), op, extract_idents(sexp[3]))
+        end
       when :call
         with_safe_op = sexp[2] == :"&."
         if sexp[3] == :call
