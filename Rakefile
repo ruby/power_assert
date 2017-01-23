@@ -7,6 +7,7 @@ Rake::TestTask.new(:test) do |t|
   t.ruby_opts = ["-w", "-r./test/test_helper"]
   t.test_files = FileList["test/**/*_test.rb"].exclude do |i|
     begin
+      return false unless defined?(RubyVM)
       RubyVM::InstructionSequence.compile(open(i).read)
       false
     rescue SyntaxError
