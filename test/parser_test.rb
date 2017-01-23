@@ -33,7 +33,7 @@ class TestParser < Test::Unit::TestCase
         [[:method, "a", 2], [:method, "b", 5], [:method, "c", 10], [:method, "d", 13]]],
 
       ['a b, c { d }',
-        [[:method, "a", 0], [:method, "b", 2], [:method, "c", 5]]],
+        [[:method, "b", 2], [:method, "c", 5], [:method, "a", 0]]],
 
       ['assertion_message { a }',
         [[:method, "a", 20]]],

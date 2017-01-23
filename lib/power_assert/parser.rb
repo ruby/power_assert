@@ -74,7 +74,9 @@ module PowerAssert
       when :assoclist_from_args, :bare_assoc_hash, :dyna_symbol, :paren, :string_embexpr,
         :regexp_literal, :xstring_literal
         sexp[1].flat_map {|s| extract_idents(s) }
-      when :assoc_new, :command, :dot2, :dot3, :string_content
+      when :command
+        [sexp[2], sexp[1]].flat_map {|s| extract_idents(s) }
+      when :assoc_new, :dot2, :dot3, :string_content
         sexp[1..-1].flat_map {|s| extract_idents(s) }
       when :unary
         handle_columnless_ident([], sexp[1], extract_idents(sexp[2]))
