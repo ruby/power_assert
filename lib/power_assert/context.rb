@@ -90,6 +90,7 @@ module PowerAssert
     end
 
     def detect_path(idents, return_values)
+      return @parser.call_paths.flatten.uniq if @parser.method_id_set.empty?
       all_paths = @parser.call_paths
       return_value_names = return_values.map(&:name)
       uniq_calls = uniq_calls(all_paths)

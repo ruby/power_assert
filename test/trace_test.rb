@@ -41,10 +41,10 @@ class TestTraceContext < Test::Unit::TestCase
     Byebug.stop
   end
 
-  def trace_test(expected_message, file, lineno)
+  def trace_test(expected_message, file, lineno, binding = TOPLEVEL_BINDING)
     code = "byebug\n#{expected_message.each_line.first}\n"
     lineno -= 1 # For 'byebug' at the first line
-    eval(code, TOPLEVEL_BINDING, file, lineno)
+    eval(code, binding, file, lineno)
     pa = Byebug.current_context.__send__(:processor).pa_context
     assert_equal(expected_message, pa.message)
     assert_true(pa.enabled?)
@@ -75,6 +75,17 @@ END
       0 == 0
         |
         true
+END
+  end
+
+  def test_all_refs
+    a, b, c, = 0, 1, 2, a, b, c # suppress "assigned but unused variable" warning
+    trace_test(<<END.chomp, __FILE__, __LINE__ + 1, binding)
+      a ? b : c
+      |   |   |
+      |   |   2
+      |   1
+      0
 END
   end
 end

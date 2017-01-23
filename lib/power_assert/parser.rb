@@ -26,7 +26,7 @@ module PowerAssert
 
     def method_id_set
       methods = idents.flatten.find_all {|i| i.type == :method }
-      methods.map(&:name).map(&:to_sym).each_with_object({}) {|i, h| h[i] = true }
+      @method_id_set ||= methods.map(&:name).map(&:to_sym).each_with_object({}) {|i, h| h[i] = true }
     end
 
     private
