@@ -43,9 +43,11 @@ module PowerAssert
 
     def slice_expression(str)
       str = str.chomp
-      str.sub!(/\A\s*(?:if|unless|elsif|case) /) {|i| ' ' * i.length }
-      str.sub!(/\A\s*(?:\}|end)?\./) {|i| ' ' * i.length }
-      str.sub!(/[\.\\]\z/, '')
+      str.sub!(/\A\s*(?:if|unless|elsif|case|while|until) /) {|i| ' ' * i.length }
+      str.sub!(/\A\s*(?:\}|\]|end)?\./) {|i| ' ' * i.length }
+      str.sub!(/[\{\.\\]\z/, '')
+      str.sub!(/(?:&&|\|\|)\z/, '')
+      str.sub!(/ (?:do|and|or)\z/, '')
       str
     end
 
