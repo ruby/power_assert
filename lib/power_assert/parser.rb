@@ -64,7 +64,7 @@ module PowerAssert
     def extract_idents(sexp)
       tag, * = sexp
       case tag
-      when :arg_paren, :assoc_splat, :fcall, :hash, :method_add_block, :string_literal
+      when :arg_paren, :assoc_splat, :fcall, :hash, :method_add_block, :string_literal, :return
         extract_idents(sexp[1])
       when :assign, :massign
         extract_idents(sexp[2])

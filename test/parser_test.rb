@@ -106,6 +106,9 @@ class TestParser < Test::Unit::TestCase
       [':"a#{b}c"',
         [[:method, "b", 5]]],
 
+      ['return a, b',
+        [[:method, "a", 7], [:method, "b", 10]]],
+
       ['->{}.()',
         [[:method, "call", 5]]],
 
