@@ -23,8 +23,8 @@ require 'power_assert/context'
 
 module PowerAssert
   POWER_ASSERT_LIB_DIR = __dir__
-  IGNORED_LIBS = {PowerAssert => POWER_ASSERT_LIB_DIR}
-  private_constant :POWER_ASSERT_LIB_DIR, :IGNORED_LIBS
+  IGNORED_LIB_DIRS = {PowerAssert => POWER_ASSERT_LIB_DIR}
+  private_constant :POWER_ASSERT_LIB_DIR, :IGNORED_LIB_DIRS
 
   class << self
     def start(assertion_proc_or_source, assertion_method: nil, source_binding: TOPLEVEL_BINDING)
@@ -57,9 +57,9 @@ module PowerAssert
     private
 
     def ignored_file?(file)
-      IGNORED_LIBS[Byebug]    = lib_dir(Byebug, :load_settings, 2)      if defined?(Byebug) and ! IGNORED_LIBS[Byebug]
-      IGNORED_LIBS[PryByebug] = lib_dir(Pry, :start_with_pry_byebug, 2) if defined?(PryByebug) and ! IGNORED_LIBS[PryByebug]
-      IGNORED_LIBS.find do |_, dir|
+      IGNORED_LIB_DIRS[Byebug]    = lib_dir(Byebug, :load_settings, 2)      if defined?(Byebug) and ! IGNORED_LIB_DIRS[Byebug]
+      IGNORED_LIB_DIRS[PryByebug] = lib_dir(Pry, :start_with_pry_byebug, 2) if defined?(PryByebug) and ! IGNORED_LIB_DIRS[PryByebug]
+      IGNORED_LIB_DIRS.find do |_, dir|
         file.start_with?(dir)
       end
     end
