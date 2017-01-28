@@ -2,6 +2,9 @@
 == About
 Power Assert for Ruby.
 
+Power Assert shows each value of variables and method calls in the expression.
+It is useful for testing, providing which value wasn't correct when the condition is not satisfied.
+
 == Related Projects
 * {test-unit}[https://github.com/test-unit/test-unit](>= 3.0.0)
 * {test-unit-power_assert}[https://github.com/k-tsj/test-unit-power_assert]
