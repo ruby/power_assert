@@ -1,4 +1,4 @@
-warn 'power_assert/colorize are experimental'
+warn 'power_assert/colorize is experimental'
 
 require 'power_assert/configuration'
 
