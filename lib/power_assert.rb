@@ -57,7 +57,7 @@ module PowerAssert
     private
 
     def ignored_file?(file)
-      IGNORED_LIB_DIRS[Byebug]    = lib_dir(Byebug, :load_settings, 2)      if defined?(Byebug) and ! IGNORED_LIB_DIRS[Byebug]
+      IGNORED_LIB_DIRS[Byebug]    = lib_dir(Byebug, :attach, 2)             if defined?(Byebug) and ! IGNORED_LIB_DIRS[Byebug]
       IGNORED_LIB_DIRS[PryByebug] = lib_dir(Pry, :start_with_pry_byebug, 2) if defined?(PryByebug) and ! IGNORED_LIB_DIRS[PryByebug]
       IGNORED_LIB_DIRS.find do |_, dir|
         file.start_with?(dir)
