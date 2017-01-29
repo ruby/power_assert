@@ -7,7 +7,6 @@ It is useful for testing, providing which value wasn't correct when the conditio
 
 == Related Projects
 * {test-unit}[https://github.com/test-unit/test-unit](>= 3.0.0)
-* {test-unit-power_assert}[https://github.com/k-tsj/test-unit-power_assert]
 * {minitest-power_assert}[https://github.com/hsbt/minitest-power_assert]
 * {pry-power_assert}[https://github.com/yui-knk/pry-power_assert]
 * {rspec-power_assert}[https://github.com/joker1007/rspec-power_assert]
