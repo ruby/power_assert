@@ -23,7 +23,6 @@ module PowerAssert
         next if ! method_id_set[method_id]
         next if tp.event == :c_return and
                 not (@parser.lineno == tp.lineno and @parser.path == tp.path)
-        next unless tp.binding # workaround for ruby 2.2
         locs = PowerAssert.app_caller_locations
         diff = locs.length - base_caller_length
         if (tp.event == :c_return && diff == 1 || tp.event == :return && diff <= 2) and Thread.current == @target_thread
