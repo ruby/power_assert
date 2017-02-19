@@ -150,8 +150,10 @@ module PowerAssert
           locs = PowerAssert.app_caller_locations
           path = locs.last.path
           lineno = locs.last.lineno
-          line ||= open(path).each_line.drop(lineno - 1).first
-          @parser = Parser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s)
+          if File.exist?(path)
+            line ||= open(path).each_line.drop(lineno - 1).first
+            @parser = Parser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s)
+          end
         end
       end
     end
@@ -179,8 +181,12 @@ module PowerAssert
       super(base.length)
       path = target_frame.path
       lineno = target_frame.lineno
-      line = open(path).each_line.drop(lineno - 1).first
-      @parser = Parser.new(line, path, lineno, binding)
+      if File.exist?(path)
+        line = open(path).each_line.drop(lineno - 1).first
+        @parser = Parser.new(line, path, lineno, binding)
+      else
+        @parser = Parser::DUMMY
+      end
     end
 
     def enable
