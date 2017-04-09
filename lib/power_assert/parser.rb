@@ -212,7 +212,7 @@ module PowerAssert
         if node.kind_of?(Branch)
           prefixes = node.flat_map {|n| collect_paths(n, prefixes, 0) }
         else
-          prefixes = prefixes.empty? ? [[node]] : prefixes.map {|prefix| prefix + [node] }
+          prefixes = prefixes.map {|prefix| prefix + [node] }
         end
         collect_paths(idents, prefixes, index + 1)
       else
