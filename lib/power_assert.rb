@@ -57,11 +57,18 @@ module PowerAssert
     private
 
     def ignored_file?(file)
-      IGNORED_LIB_DIRS[Byebug]    = lib_dir(Byebug, :attach, 2)             if defined?(Byebug) and ! IGNORED_LIB_DIRS[Byebug]
-      IGNORED_LIB_DIRS[PryByebug] = lib_dir(Pry, :start_with_pry_byebug, 2) if defined?(PryByebug) and ! IGNORED_LIB_DIRS[PryByebug]
+      setup_ignored_lib_dir(Byebug, :attach, 2) if defined?(Byebug)
+      setup_ignored_lib_dir(PryByebug, :start_with_pry_byebug, 2, Pry) if defined?(PryByebug)
       IGNORED_LIB_DIRS.find do |_, dir|
         file.start_with?(dir)
       end
+    end
+
+    def setup_ignored_lib_dir(lib, mid, depth, lib_obj = lib)
+      unless IGNORED_LIB_DIRS.key?(lib)
+        IGNORED_LIB_DIRS[lib] = lib_dir(lib_obj, mid, depth)
+      end
+    rescue NameError
     end
 
     def lib_dir(obj, mid, depth)
