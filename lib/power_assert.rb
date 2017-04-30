@@ -51,7 +51,7 @@ module PowerAssert
 
     def app_context?
       top_frame = caller_locations.drop_while {|i| i.path.start_with?(POWER_ASSERT_LIB_DIR) }.first
-      top_frame && ! ignored_file?(top_frame.path)
+      top_frame and ! ignored_file?(top_frame.path)
     end
 
     private
