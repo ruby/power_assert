@@ -29,7 +29,9 @@ module PowerAssert
   # For backward compatibility
   IGNORED_LIB_DIRS = INTERNAL_LIB_DIRS
   private_constant :IGNORED_LIB_DIRS
-  deprecate_constant :IGNORED_LIB_DIRS
+  if respond_to?(:deprecate_constant)
+    deprecate_constant :IGNORED_LIB_DIRS
+  end
 
   class << self
     def start(assertion_proc_or_source, assertion_method: nil, source_binding: TOPLEVEL_BINDING)
