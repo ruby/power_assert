@@ -23,8 +23,13 @@ require 'power_assert/context'
 
 module PowerAssert
   POWER_ASSERT_LIB_DIR = __dir__
-  IGNORED_LIB_DIRS = {PowerAssert => POWER_ASSERT_LIB_DIR}
-  private_constant :POWER_ASSERT_LIB_DIR, :IGNORED_LIB_DIRS
+  INTERNAL_LIB_DIRS = {PowerAssert => POWER_ASSERT_LIB_DIR}
+  private_constant :POWER_ASSERT_LIB_DIR, :INTERNAL_LIB_DIRS
+
+  # For backward compatibility
+  IGNORED_LIB_DIRS = INTERNAL_LIB_DIRS
+  private_constant :IGNORED_LIB_DIRS
+  deprecate_constant :IGNORED_LIB_DIRS
 
   class << self
     def start(assertion_proc_or_source, assertion_method: nil, source_binding: TOPLEVEL_BINDING)
@@ -46,27 +51,27 @@ module PowerAssert
     end
 
     def app_caller_locations
-      caller_locations.drop_while {|i| ignored_file?(i.path) }.take_while {|i| ! ignored_file?(i.path) }
+      caller_locations.drop_while {|i| internal_file?(i.path) }.take_while {|i| ! internal_file?(i.path) }
     end
 
     def app_context?
       top_frame = caller_locations.drop_while {|i| i.path.start_with?(POWER_ASSERT_LIB_DIR) }.first
-      top_frame and ! ignored_file?(top_frame.path)
+      top_frame and ! internal_file?(top_frame.path)
     end
 
     private
 
-    def ignored_file?(file)
-      setup_ignored_lib_dir(Byebug, :attach, 2) if defined?(Byebug)
-      setup_ignored_lib_dir(PryByebug, :start_with_pry_byebug, 2, Pry) if defined?(PryByebug)
-      IGNORED_LIB_DIRS.find do |_, dir|
+    def internal_file?(file)
+      setup_internal_lib_dir(Byebug, :attach, 2) if defined?(Byebug)
+      setup_internal_lib_dir(PryByebug, :start_with_pry_byebug, 2, Pry) if defined?(PryByebug)
+      INTERNAL_LIB_DIRS.find do |_, dir|
         file.start_with?(dir)
       end
     end
 
-    def setup_ignored_lib_dir(lib, mid, depth, lib_obj = lib)
-      unless IGNORED_LIB_DIRS.key?(lib)
-        IGNORED_LIB_DIRS[lib] = lib_dir(lib_obj, mid, depth)
+    def setup_internal_lib_dir(lib, mid, depth, lib_obj = lib)
+      unless INTERNAL_LIB_DIRS.key?(lib)
+        INTERNAL_LIB_DIRS[lib] = lib_dir(lib_obj, mid, depth)
       end
     rescue NameError
     end

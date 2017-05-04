@@ -2,7 +2,7 @@ require 'byebug/core'
 
 class << PowerAssert
   prepend Module.new {
-    def ignored_file?(file)
+    def internal_file?(file)
       super or file == __FILE__
     end
   }
