@@ -21,25 +21,23 @@ if defined?(RubyVM)
           :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze
         ]
 
-        class Bug11182
+        bug11182 = Class.new do
           def fixed?
             true
           end
         end
-        private_constant :Bug11182
 
-        refine Bug11182 do
+        refine bug11182 do
           def fixed?
           end
         end
 
-        class Bug11182Sub < Bug11182
+        _ = Class.new(bug11182) do
           alias _fixed? fixed?
           protected :_fixed?
         end
-        private_constant :Bug11182Sub
 
-        if (Bug11182.new.fixed? rescue false)
+        if (bug11182.new.fixed? rescue false)
           basic_classes.each do |klass|
             basic_operators.each do |bop|
               refine(klass) do
