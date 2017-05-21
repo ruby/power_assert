@@ -6,12 +6,16 @@ Power Assert shows each value of variables and method calls in the expression.
 It is useful for testing, providing which value wasn't correct when the condition is not satisfied.
 
 == Related Projects
+In general, you don't need to use this library directly.
+Use following test frameworks or extensions instead.
+
 * {test-unit}[https://github.com/test-unit/test-unit](>= 3.0.0)
+  * {Document}[http://test-unit.github.io/test-unit/en/Test/Unit/Assertions.html#assert-instance_method]
 * {minitest-power_assert}[https://github.com/hsbt/minitest-power_assert]
-* {pry-power_assert}[https://github.com/yui-knk/pry-power_assert]
 * {rspec-power_assert}[https://github.com/joker1007/rspec-power_assert]
-* {power_p}[https://github.com/k-tsj/power_p]
+* {pry-power_assert}[https://github.com/yui-knk/pry-power_assert]
 * {pry-byebug-power_assert}[https://github.com/k-tsj/pry-byebug-power_assert]
+* {power_p}[https://github.com/k-tsj/power_p]
 
 == Requirement
 * CRuby 2.0.0 or later
