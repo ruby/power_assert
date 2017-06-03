@@ -22,7 +22,7 @@ require 'power_assert/configuration'
 require 'power_assert/context'
 
 module PowerAssert
-  POWER_ASSERT_LIB_DIR = File.realpath(__dir__)
+  POWER_ASSERT_LIB_DIR = __dir__
   INTERNAL_LIB_DIRS = {PowerAssert => POWER_ASSERT_LIB_DIR}
   private_constant :POWER_ASSERT_LIB_DIR, :INTERNAL_LIB_DIRS
 
@@ -57,7 +57,7 @@ module PowerAssert
     end
 
     def app_context?
-      top_frame = caller_locations.drop_while {|i| File.realpath(i.path).start_with?(POWER_ASSERT_LIB_DIR) }.first
+      top_frame = caller_locations.drop_while {|i| i.path.start_with?(POWER_ASSERT_LIB_DIR) }.first
       top_frame and ! internal_file?(top_frame.path)
     end
 
@@ -67,7 +67,7 @@ module PowerAssert
       setup_internal_lib_dir(Byebug, :attach, 2) if defined?(Byebug)
       setup_internal_lib_dir(PryByebug, :start_with_pry_byebug, 2, Pry) if defined?(PryByebug)
       INTERNAL_LIB_DIRS.find do |_, dir|
-        File.realpath(file).start_with?(dir)
+        file.start_with?(dir)
       end
     end
 
@@ -79,7 +79,7 @@ module PowerAssert
     end
 
     def lib_dir(obj, mid, depth)
-      File.realpath(File.expand_path('../' * depth, obj.method(mid).source_location[0]))
+      File.expand_path('../' * depth, obj.method(mid).source_location[0])
     end
 
     if defined?(RubyVM)
