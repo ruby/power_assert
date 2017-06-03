@@ -17,8 +17,8 @@ Rake::TestTask.new(:test) do |t|
 end
 
 desc "Run the benchmark suite"
-task('benchmark') do
-  Dir.glob('benchmarks/bm_*.rb').each do |f|
+task :benchmark do
+  Dir.glob("benchmarks/bm_*.rb").each do |f|
     load(f)
   end
 end
