@@ -16,6 +16,40 @@ Rake::TestTask.new(:test) do |t|
   end
 end
 
+# ruby/ruby:test/pathname/test_pathname.rb
+def has_symlink?
+  begin
+    File.symlink("", "")
+  rescue NotImplementedError, Errno::EACCES
+    return false
+  rescue Errno::ENOENT
+  end
+  return true
+end
+
+SYMLINK_DIRS = ["lib", "test"]
+
+task :before_script do
+  if ENV["TEST_SYMLINK"] == "yes" and has_symlink?
+    SYMLINK_DIRS.each do |d|
+      File.rename(d, ".#{d}")
+      File.symlink(".#{d}", d)
+    end
+  end
+end
+
+task :after_script do
+  SYMLINK_DIRS.each do |d|
+    if File.symlink?(d) and File.directory?(".#{d}")
+      File.unlink(d)
+      File.rename(".#{d}", d)
+    end
+    unless File.directory?(d)
+      raise "#{d} should be directory"
+    end
+  end
+end
+
 desc "Run the benchmark suite"
 task :benchmark do
   Dir.glob("benchmarks/bm_*.rb").each do |f|

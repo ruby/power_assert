@@ -7,8 +7,15 @@ rvm:
   - 2.3.4
   - 2.4.1
   - ruby-head
+env:
+  - TEST_SYMLINK="no"
+  - TEST_SYMLINK="yes"
 matrix:
   allow_failures:
     - rvm: ruby-head
 before_install:
  - gem update bundler
+before_script:
+ - bundle exec rake before_script
+after_script:
+ - bundle exec rake after_script
