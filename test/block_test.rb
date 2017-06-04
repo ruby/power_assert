@@ -287,7 +287,7 @@ END
     t do
       o = Object.new
       def o.inspect
-        raise
+        raise ''
       end
       assert_equal <<END.chomp.b, assertion_message {
         o.class
