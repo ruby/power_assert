@@ -4,7 +4,8 @@ require "rake/testtask"
 task :default => :test
 Rake::TestTask.new(:test) do |t|
   # helper(simplecov) must be required before loading power_assert
-  t.ruby_opts = ["-w", "-r./test/test_helper"]
+  helper_path = File.realpath("test/test_helper.rb")
+  t.ruby_opts = ["-w", "-r#{helper_path}"]
   t.test_files = FileList["test/**/*_test.rb"].exclude do |i|
     begin
       return false unless defined?(RubyVM)
