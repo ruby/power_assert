@@ -22,7 +22,7 @@ require 'power_assert/configuration'
 require 'power_assert/context'
 
 module PowerAssert
-  POWER_ASSERT_LIB_DIR = File.dirname(caller_locations.first.path)
+  POWER_ASSERT_LIB_DIR = File.dirname(caller_locations(1, 1).first.path)
   INTERNAL_LIB_DIRS = {PowerAssert => POWER_ASSERT_LIB_DIR}
   private_constant :POWER_ASSERT_LIB_DIR, :INTERNAL_LIB_DIRS
 
