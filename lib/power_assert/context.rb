@@ -59,16 +59,16 @@ module PowerAssert
       path = detect_path(idents, return_values)
       return line unless path
 
-      delete_unidentified_calls(return_values, path)
-      methods, refs = path.partition {|i| i.type == :method }
-      return_values.zip(methods) do |i, j|
+      return_values, methods_in_path = find_all_identified_calls(return_values, path)
+      return_values.zip(methods_in_path) do |i, j|
         unless i.name == j.name
           warn "power_assert: [BUG] Failed to get column: #{i.name}"
           return line
         end
         i.column = j.column
       end
-      ref_values = refs.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] }
+      refs_in_path = path.find_all {|i| i.type == :ref }
+      ref_values = refs_in_path.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] }
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
       return line if vals.empty?
 
@@ -108,12 +108,14 @@ module PowerAssert
       all_calls.find_all {|_, call_count| call_count == 1 }.map {|name, _| name }
     end
 
-    def delete_unidentified_calls(return_values, path)
+    def find_all_identified_calls(return_values, path)
       return_value_num_of_calls = enum_count_by(return_values, &:name)
       path_num_of_calls = enum_count_by(path.find_all {|ident| ident.type == :method }, &:name)
       identified_calls = return_value_num_of_calls.find_all {|name, num| path_num_of_calls[name] == num }.map(&:first)
-      return_values.delete_if {|val| ! identified_calls.include?(val.name) }
-      path.delete_if {|ident| ident.type == :method and ! identified_calls.include?(ident.name) }
+      [
+        return_values.find_all {|val| identified_calls.include?(val.name) },
+        path.find_all {|ident| ident.type == :method and identified_calls.include?(ident.name)  }
+      ]
     end
 
     def enum_count_by(enum, &blk)
