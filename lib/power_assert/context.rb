@@ -16,7 +16,10 @@ module PowerAssert
       return_values = []
       trace_alias_method = PowerAssert.configuration._trace_alias_method
       @trace_return = TracePoint.new(:return, :c_return) do |tp|
-        method_id_set ||= @parser.method_id_set
+        unless method_id_set
+          next unless Thread.current == @target_thread
+          method_id_set = @parser.method_id_set
+        end
         method_id = SUPPORT_ALIAS_METHOD                      ? tp.callee_id :
                     trace_alias_method && tp.event == :return ? tp.binding.eval('::Kernel.__callee__') :
                                                                 tp.method_id

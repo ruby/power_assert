@@ -255,6 +255,27 @@ END
       end
     end
 
+    t do
+      th = Thread.start do
+        while true
+          __id__
+        end
+      end
+      begin
+        30.times do
+          assert_equal <<END.chomp,
+          assertion_message { "0".class }
+                                  |
+                                  String
+END
+          assertion_message { "0".class }
+        end
+      ensure
+        th.kill
+        th.join
+      end
+    end
+
     if PowerAssert.respond_to?(:clear_global_method_cache, true)
       t do
         3.times do
