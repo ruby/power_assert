@@ -211,6 +211,16 @@ END
       }
     end
 
+    t do
+      assert_equal <<END.chomp, assertion_message {
+        0 == 0 ? 1 : 2
+          |
+          true
+END
+        0 == 0 ? 1 : 2
+      }
+    end
+
     sub_test_case 'attribute' do
       # TracePoint cannot trace attributes
       # https://bugs.ruby-lang.org/issues/10470
@@ -241,16 +251,6 @@ END
                  #<Class>
 END
           true ? @obj.to_i.to_s : @obj.to_i
-        }
-      end
-
-      t do
-        assert_equal <<END.chomp, assertion_message {
-          0 == 0 ? 1 : 2
-            |
-            true
-END
-          0 == 0 ? 1 : 2
         }
       end
     end
