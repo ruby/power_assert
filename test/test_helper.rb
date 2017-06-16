@@ -54,3 +54,7 @@ module PowerAssertTestHelper
     end
   end
 end
+
+RubyVM::InstructionSequence.compile_option = {
+  specialized_instruction: true
+}
