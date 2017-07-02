@@ -291,7 +291,7 @@ END
         end
       end
       begin
-        30.times do
+        20.times do
           assert_equal <<END.chomp,
           assertion_message { "0".class }
                                   |
