@@ -205,6 +205,7 @@ END
     end
 
     t do
+      omit 'String#-@ is not defined' unless 'a'.respond_to?(:-@)
       assert_equal <<END.chomp, assertion_message {
         -'a'
         |
