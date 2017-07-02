@@ -13,12 +13,12 @@ if defined?(RubyVM)
       module PowerAssert
         # set redefined flag
         basic_classes = [
-          Fixnum, Float, String, Array, Hash, Bignum, Symbol, Time, Regexp
+          Fixnum, Float, String, Array, Hash, Bignum, Symbol, Time, Regexp, NilClass, TrueClass, FalseClass
         ]
 
         basic_operators = [
           :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=,
-          :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze
+          :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min
         ]
 
         bug11182 = Class.new do

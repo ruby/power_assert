@@ -206,6 +206,31 @@ END
 
     t do
       assert_equal <<END.chomp, assertion_message {
+        -'a'
+        |
+        "a"
+END
+        -'a'
+      }
+    end
+
+    t do
+      a = 0
+      assert_equal <<END.chomp, assertion_message {
+        [a, 1].max + [a, 1].min
+         |     |   |  |     |
+         |     |   |  |     0
+         |     |   |  0
+         |     |   1
+         |     1
+         0
+END
+        [a, 1].max + [a, 1].min
+      }
+    end
+
+    t do
+      assert_equal <<END.chomp, assertion_message {
         ! Object
         | |
         | Object
