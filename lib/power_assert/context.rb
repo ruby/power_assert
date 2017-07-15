@@ -40,7 +40,7 @@ module PowerAssert
       end
       @message_proc = -> {
         raise 'call #yield or #enable at first' unless fired?
-        @message ||= build_assertion_message(@parser.line, @parser.idents, @parser.binding, return_values).freeze
+        @message ||= build_assertion_message(@parser, return_values).freeze
       }
     end
 
@@ -54,12 +54,14 @@ module PowerAssert
       @fired
     end
 
-    def build_assertion_message(line, idents, proc_binding, return_values)
+    def build_assertion_message(parser, return_values)
       if PowerAssert.configuration._colorize_message
-        line = Pry::Code.new(line).highlighted
+        line = Pry::Code.new(parser.line).highlighted
+      else
+        line = parser.line
       end
 
-      path = detect_path(idents, return_values)
+      path = detect_path(parser, return_values)
       return line unless path
 
       return_values, methods_in_path = find_all_identified_calls(return_values, path)
@@ -71,7 +73,7 @@ module PowerAssert
         i.column = j.column
       end
       refs_in_path = path.find_all {|i| i.type == :ref }
-      ref_values = refs_in_path.map {|i| Value[i.name, proc_binding.eval(i.name), i.column] }
+      ref_values = refs_in_path.map {|i| Value[i.name, parser.binding.eval(i.name), i.column] }
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
       return line if vals.empty?
 
@@ -91,9 +93,9 @@ module PowerAssert
       lines.join("\n")
     end
 
-    def detect_path(idents, return_values)
-      return @parser.call_paths.flatten.uniq if @parser.method_id_set.empty?
-      all_paths = @parser.call_paths
+    def detect_path(parser, return_values)
+      return parser.call_paths.flatten.uniq if parser.method_id_set.empty?
+      all_paths = parser.call_paths
       return_value_names = return_values.map(&:name)
       uniq_calls = uniq_calls(all_paths)
       uniq_call = return_value_names.find {|i| uniq_calls.include?(i) }
