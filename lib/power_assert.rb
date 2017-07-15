@@ -83,8 +83,11 @@ module PowerAssert
     end
 
     if defined?(RubyVM)
+      CLEAR_CACHE_ISEQ = RubyVM::InstructionSequence.compile('using PowerAssert.const_get(:Empty)')
+      private_constant :CLEAR_CACHE_ISEQ
+
       def clear_global_method_cache
-        eval('using PowerAssert.const_get(:Empty)', TOPLEVEL_BINDING)
+        CLEAR_CACHE_ISEQ.eval
       end
     end
   end
