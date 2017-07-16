@@ -6,7 +6,7 @@ module PowerAssert
 
     attr_reader :line, :path, :lineno, :binding
 
-    def initialize(line, path, lineno, binding, assertion_method_name = nil)
+    def initialize(line, path, lineno, binding, assertion_method_name = nil, assertion_proc = nil)
       @line = line
       @line_for_parsing = valid_syntax?(line) ? line : slice_expression(line)
       @path = path
@@ -14,6 +14,7 @@ module PowerAssert
       @binding = binding
       @proc_local_variables = binding.eval('local_variables').map(&:to_s)
       @assertion_method_name = assertion_method_name
+      @assertion_proc = assertion_proc
     end
 
     def idents
