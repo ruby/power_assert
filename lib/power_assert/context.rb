@@ -7,13 +7,11 @@ module PowerAssert
   class Context
     Value = Struct.new(:name, :value, :column)
 
-    attr_reader :message_proc
-
     def initialize(base_caller_length)
       @fired = false
       @target_thread = Thread.current
       method_id_set = nil
-      return_values = []
+      @return_values = []
       trace_alias_method = PowerAssert.configuration._trace_alias_method
       @trace_return = TracePoint.new(:return, :c_return) do |tp|
         unless method_id_set
@@ -34,18 +32,19 @@ module PowerAssert
             val = PowerAssert.configuration.lazy_inspection ?
               tp.return_value :
               InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
-            return_values << Value[method_id.to_s, val, nil]
+            @return_values << Value[method_id.to_s, val, nil]
           end
         end
       end
-      @message_proc = -> {
-        raise 'call #yield or #enable at first' unless fired?
-        @message ||= build_assertion_message(@parser, return_values).freeze
-      }
     end
 
     def message
-      @message_proc.()
+      raise 'call #yield or #enable at first' unless fired?
+      @message ||= build_assertion_message(@parser, @return_values).freeze
+    end
+
+    def message_proc
+      -> { message }
     end
 
     private
