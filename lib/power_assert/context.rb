@@ -5,7 +5,7 @@ require 'power_assert/parser'
 
 module PowerAssert
   class Context
-    Value = Struct.new(:name, :value, :column)
+    Value = Struct.new(:name, :value, :lineno, :column)
 
     def initialize(base_caller_length)
       @fired = false
@@ -32,7 +32,7 @@ module PowerAssert
             val = PowerAssert.configuration.lazy_inspection ?
               tp.return_value :
               InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
-            @return_values << Value[method_id.to_s, val, nil]
+            @return_values << Value[method_id.to_s, val, locs[idx].lineno, nil]
           end
         end
       end
@@ -72,7 +72,7 @@ module PowerAssert
         i.column = j.column
       end
       refs_in_path = path.find_all {|i| i.type == :ref }
-      ref_values = refs_in_path.map {|i| Value[i.name, parser.binding.eval(i.name), i.column] }
+      ref_values = refs_in_path.map {|i| Value[i.name, parser.binding.eval(i.name), parser.lineno, i.column] }
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
       return line if vals.empty?
 
