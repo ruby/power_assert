@@ -53,7 +53,7 @@ end
 
 desc "Run the benchmark suite"
 task :benchmark do
-  Dir.glob("benchmarks/bm_*.rb").each do |f|
+  Dir.glob("benchmark/bm_*.rb").each do |f|
     load(f)
   end
 end
