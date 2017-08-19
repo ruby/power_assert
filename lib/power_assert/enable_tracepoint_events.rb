@@ -40,8 +40,10 @@ if defined?(RubyVM)
         if (bug11182.new.fixed? rescue false)
           basic_classes.each do |klass|
             basic_operators.each do |bop|
-              refine(klass) do
-                define_method(bop) {}
+              if klass.public_method_defined?(bop)
+                refine(klass) do
+                  define_method(bop) {}
+                end
               end
             end
           end
