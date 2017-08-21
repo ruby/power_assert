@@ -23,4 +23,42 @@ Use following test frameworks or extensions instead.
 == Reference
 * {Power Assert in Ruby (at RubyKaigi 2014) // Speaker Deck}[https://speakerdeck.com/k_tsj/power-assert-in-ruby]
 
+== Known Limitations
+* Expressions must be put in one line. Expressions with folded long lines produce nothing report, e.g.:
+    assert do
+      # reported
+      func(foo: 0123456789, bar: "abcdefg")
+      # won't be reported
+      func(foo: 0123456789,
+           bar: "abcdefg")
+    end
+* Expressions must have one or more method call. Expressions with no method call produce nothing report, e.g.:
+    val = false
+    assert do
+      # reported
+      val == true
+      # won't be reported
+      val
+    end
+* Returned values from accessor methods, method missing, or "super" produce nothing report, e.g:
+    class Foo
+      attr_reader :val
+    end
+    foo = Foo.new
+    foo.val = false
+    assert do
+      # reported (only the value of "foo" and the literal "true")
+      foo.val == true
+      # won't be reported
+      foo.val
+    end
+* Expressions should not have conditional branches. Expressions with such conditional codes may produce nothing report, e.g.:
+    condition = true
+    expected = false
+    actual = true
+    assert do
+      # won't be reported
+      if condition then expected == actual else expected != actual end
+    end
+
 == Travis Build Status {<img src="https://secure.travis-ci.org/k-tsj/power_assert.png?branch=master"/>}[http://travis-ci.org/k-tsj/power_assert]
