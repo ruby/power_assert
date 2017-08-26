@@ -139,8 +139,8 @@ module PowerAssert
             (tag3 == :@ident or tag3 == :@const) and mname == @assertion_method_name and (tag4 == :brace_block or tag4 == :do_block)
           ss.flat_map {|s| extract_idents(s) }
         else
-          _, (s, *) = sexp
-          extract_idents(s)
+          _, (s0, *) = sexp
+          extract_idents(s0)
         end
       when :ifop
         _, s0, s1, s2 = sexp
