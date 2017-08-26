@@ -479,6 +479,22 @@ END
         false ? 0.to_s.to_i : 0.to_s
       }
     end
+
+    t do
+      a = true
+      b = false
+      c = true
+      assert_equal <<END.chomp, assertion_message {
+        if a then b == c else b != c end
+           |      | |  |
+           |      | |  true
+           |      | false
+           |      false
+           true
+END
+        if a then b == c else b != c end
+      }
+    end
   end
 
   data(
