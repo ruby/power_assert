@@ -495,6 +495,22 @@ END
         if a then b == c else b != c end
       }
     end
+
+    t do
+      a = true
+      b = false
+      c = true
+      assert_equal <<END.chomp, assertion_message {
+        unless a then b == c else b != c end
+               |                  | |  |
+               |                  | |  true
+               |                  | true
+               |                  false
+               true
+END
+        unless a then b == c else b != c end
+      }
+    end
   end
 
   data(
