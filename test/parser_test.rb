@@ -136,7 +136,7 @@ class TestParser < Test::Unit::TestCase
       ['if a then b; c else d; e end',
         [[:method, "a", 3],
           [[[:method, "b", 10], [:method, "c", 13]],
-              [[:method, "d", 20], [:method, "e", 23]]]],
+            [[:method, "d", 20], [:method, "e", 23]]]],
         [["a", "b", "c"], ["a", "d", "e"]]],
 
       ['if a then b end',
@@ -146,7 +146,7 @@ class TestParser < Test::Unit::TestCase
       ['unless a then b; c else d; e end',
         [[:method, "a", 7],
           [[[:method, "b", 14], [:method, "c", 17]],
-              [[:method, "d", 24], [:method, "e", 27]]]],
+            [[:method, "d", 24], [:method, "e", 27]]]],
         [["a", "b", "c"], ["a", "d", "e"]]],
 
       ['unless a then b end',
