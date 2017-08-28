@@ -67,8 +67,8 @@ Use following test frameworks or extensions instead.
     expected = false
     actual = true
     assert do
-      # won't be reported
-      if condition then expected == actual else expected != actual end
+      # this will fail but nothing reported
+      condition ? expected == actual : expected == actual
     end
 
 == Travis Build Status {<img src="https://secure.travis-ci.org/k-tsj/power_assert.png?branch=master"/>}[http://travis-ci.org/k-tsj/power_assert]
