@@ -48,7 +48,7 @@ Use following test frameworks or extensions instead.
     end
 * Returned values from accessor methods, method missing, or "super" produce nothing report, e.g:
     class Foo
-      attr_reader :val
+      attr_accessor :val
     end
     foo = Foo.new
     foo.val = false
