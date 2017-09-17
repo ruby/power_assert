@@ -1,7 +1,4 @@
 begin
-  require 'bundler'
-  Bundler.require
-
   if ENV['COVERAGE']
     require 'simplecov'
     SimpleCov.start do
@@ -9,6 +6,9 @@ begin
       add_filter '/vendor/'
     end
   end
+
+  require 'bundler'
+  Bundler.require
 rescue LoadError
 end
 
