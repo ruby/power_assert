@@ -29,7 +29,7 @@ Use following test frameworks or extensions instead.
       # reported
       func(foo: 0123456789, bar: "abcdefg")
     end
-    
+
     assert do
       # won't be reported
       func(foo: 0123456789,
@@ -41,7 +41,7 @@ Use following test frameworks or extensions instead.
       # reported
       val == true
     end
-    
+
     assert do
       # won't be reported
       val
@@ -52,12 +52,12 @@ Use following test frameworks or extensions instead.
     end
     foo = Foo.new
     foo.val = false
-    
+
     assert do
       # reported (only the value of "foo" and the literal "true")
       foo.val == true
     end
-    
+
     assert do
       # won't be reported
       foo.val
