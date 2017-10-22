@@ -76,7 +76,13 @@ module PowerAssert
       vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
       return line if vals.empty?
 
-      fmt = (0..vals[0].column).map {|i| vals.find {|v| v.column == i } ? "%<#{i}>s" : ' '  }.join
+      fmt = (0..vals[0].column).map do |i|
+        if vals.find {|v| v.column == i }
+          "%<#{i}>s"
+        else
+          line[i] == "\t" ? "\t" : ' '
+        end
+      end.join
       lines = []
       lines << line.chomp
       lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp

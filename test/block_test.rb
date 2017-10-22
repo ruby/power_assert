@@ -251,6 +251,16 @@ END
       }
     end
 
+    t do
+      assert_equal <<END.chomp, assertion_message {
+	[].class
+	   |
+	   Array
+END
+	[].class
+      }
+    end
+
     sub_test_case 'attribute' do
       # TracePoint cannot trace attributes
       # https://bugs.ruby-lang.org/issues/10470
