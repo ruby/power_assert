@@ -3,7 +3,6 @@ if defined?(RubyVM) and ! RubyVM::InstructionSequence.compile_option[:specialize
 end
 
 require_relative 'test_helper'
-require 'byebug'
 
 class TestTraceContext < Test::Unit::TestCase
   include PowerAssertTestHelper
@@ -92,4 +91,4 @@ END
       0
 END
   end
-end
+end if defined?(Byebug)

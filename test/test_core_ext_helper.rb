@@ -1,3 +1,4 @@
+require 'byebug'
 require 'byebug/core'
 
 class << PowerAssert

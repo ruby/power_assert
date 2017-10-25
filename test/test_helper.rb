@@ -9,14 +9,17 @@ begin
 
   require 'bundler'
   Bundler.require
-rescue LoadError
+rescue LoadError, Bundler::GemNotFound
 end
 
 require 'test/unit'
 require 'power_assert'
 require 'ripper'
-require 'byebug'
-require_relative 'test_core_ext_helper'
+
+begin
+  require_relative 'test_core_ext_helper'
+rescue LoadError
+end
 
 module PowerAssertTestHelper
   class << self
