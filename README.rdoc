@@ -5,6 +5,13 @@ Power Assert for Ruby.
 Power Assert shows each value of variables and method calls in the expression.
 It is useful for testing, providing which value wasn't correct when the condition is not satisfied.
 
+    Failure:
+       assert { 3.times.to_a.include?(3) }
+                  |     |    |
+                  |     |    false
+                  |     [0, 1, 2]
+                  #<Enumerator: 3:times>
+
 == Related Projects
 In general, you don't need to use this library directly.
 Use following test frameworks or extensions instead.
