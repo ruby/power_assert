@@ -9,7 +9,7 @@ Rake::TestTask.new(:test) do |t|
   t.test_files = FileList["test/**/*_test.rb"].exclude do |i|
     begin
       return false unless defined?(RubyVM)
-      RubyVM::InstructionSequence.compile(open(i).read)
+      RubyVM::InstructionSequence.compile(File.read(i))
       false
     rescue SyntaxError
       true
