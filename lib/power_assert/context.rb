@@ -163,7 +163,7 @@ module PowerAssert
           path = locs.last.path
           lineno = locs.last.lineno
           if File.exist?(path)
-            line ||= open(path) {|fp| fp.each_line.drop(lineno - 1).first }
+            line ||= File.open(path) {|fp| fp.each_line.drop(lineno - 1).first }
             @parser = Parser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s, @assertion_proc)
           end
         end
@@ -194,7 +194,7 @@ module PowerAssert
       path = target_frame.path
       lineno = target_frame.lineno
       if File.exist?(path)
-        line = open(path) {|fp| fp.each_line.drop(lineno - 1).first }
+        line = File.open(path) {|fp| fp.each_line.drop(lineno - 1).first }
         @parser = Parser.new(line, path, lineno, binding)
       else
         @parser = Parser::DUMMY
