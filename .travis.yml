@@ -15,9 +15,9 @@ matrix:
   allow_failures:
     - rvm: ruby-head
 before_install:
- - gem update --system
- - gem update bundler
+  - gem update --system
+  - gem update bundler
 before_script:
- - bundle exec rake before_script
+  - bundle exec rake before_script
 after_script:
- - bundle exec rake after_script
+  - bundle exec rake after_script
