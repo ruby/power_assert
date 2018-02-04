@@ -94,11 +94,12 @@ module PowerAssert
           handle_columnless_ident(extract_idents(sexp[1]), op, extract_idents(sexp[3]))
         end
       when :call
-        with_safe_op = sexp[2] == :"&."
-        if sexp[3] == :call
-          handle_columnless_ident(extract_idents(sexp[1]), :call, [], with_safe_op)
+        _, recv, (op_sym, op_name, _), method = sexp
+        with_safe_op = ((op_sym == :@op and op_name == '&.') or op_sym == :"&.")
+        if method == :call
+          handle_columnless_ident(extract_idents(recv), :call, [], with_safe_op)
         else
-          extract_idents(sexp[1]) + (with_safe_op ? [Branch[extract_idents(sexp[3]), []]] : extract_idents(sexp[3]))
+          extract_idents(recv) + (with_safe_op ? [Branch[extract_idents(method), []]] : extract_idents(method))
         end
       when :array
         sexp[1] ? sexp[1].flat_map {|s| extract_idents(s) } : []
