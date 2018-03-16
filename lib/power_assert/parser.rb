@@ -8,9 +8,14 @@ module PowerAssert
 
     def initialize(line, path, lineno, binding, assertion_method_name = nil, assertion_proc = nil)
       @line = line
-      @line_for_parsing = valid_syntax?(line) ? line : slice_expression(line)
       @path = path
       @lineno = lineno
+      begin
+        @rest_lines = open(path).each_line.drop(lineno + 1)
+      rescue StandardError
+        @rest_lines = []
+      end
+      @line_for_parsing = valid_syntax? ? @line : slice_expression(line)
       @binding = binding
       @proc_local_variables = binding.eval('local_variables').map(&:to_s)
       @assertion_method_name = assertion_method_name
@@ -32,16 +37,28 @@ module PowerAssert
 
     private
 
-    def valid_syntax?(str)
+    def valid_syntax?
       return true unless defined?(RubyVM)
       begin
         verbose, $VERBOSE = $VERBOSE, nil
-        RubyVM::InstructionSequence.compile(str)
-        true
-      rescue SyntaxError
-        false
+        original_stderr = $stderr.clone
+        $stderr.reopen(File.new('/dev/null', 'w'))
+        while true do
+          begin
+            RubyVM::InstructionSequence.compile(@line)
+            return true
+          rescue SyntaxError
+            if @rest_lines.empty?
+              return false
+            else
+              next_line = @rest_lines.shift
+              @line = "#{@line}#{next_line}"
+            end
+          end
+        end
       ensure
         $VERBOSE = verbose
+        $stderr.reopen(original_stderr)
       end
     end
 
