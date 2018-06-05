@@ -204,7 +204,7 @@ module PowerAssert
       /x
       indices = str_indices(@line_for_parsing, re, bg, ed)
       if indices.length == 1 or !(right_idents.empty? and left_idents.empty?)
-        ident = Ident[:method, mname, right_idents.empty? ? indices.first : indices.last]
+        ident = Ident[:method, mname, (right_idents.empty? ? indices.first : indices.last) || bg]
         left_idents + right_idents + (with_safe_op ? [Branch[[ident], []]] : [ident])
       else
         left_idents + right_idents
