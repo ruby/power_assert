@@ -5,7 +5,7 @@ require 'power_assert/parser'
 
 module PowerAssert
   class Context
-    Value = Struct.new(:name, :value, :lineno, :column)
+    Value = Struct.new(:name, :value, :lineno, :column, :display_offset)
 
     def initialize(base_caller_length)
       @fired = false
@@ -73,15 +73,15 @@ module PowerAssert
           warn "power_assert: [BUG] Failed to get column: #{i.name}"
           return line
         end
-        i.column = j.column
+        i.display_offset = calc_display_offset(parser.line, j.column)
       end
       refs_in_path = path.find_all {|i| i.type == :ref }
-      ref_values = refs_in_path.map {|i| Value[i.name, parser.binding.eval(i.name), parser.lineno, i.column] }
-      vals = (return_values + ref_values).find_all(&:column).sort_by(&:column).reverse
+      ref_values = refs_in_path.map {|i| Value[i.name, parser.binding.eval(i.name), parser.lineno, i.column, calc_display_offset(parser.line, i.column)] }
+      vals = (return_values + ref_values).find_all(&:display_offset).sort_by(&:display_offset).reverse
       return line if vals.empty?
 
-      fmt = (0..vals[0].column).map do |i|
-        if vals.find {|v| v.column == i }
+      fmt = (0..vals[0].display_offset).map do |i|
+        if vals.find {|v| v.display_offset == i }
           "%<#{i}>s"
         else
           line[i] == "\t" ? "\t" : ' '
@@ -89,12 +89,12 @@ module PowerAssert
       end.join
       lines = []
       lines << line.chomp
-      lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.column.to_s.to_sym] = '|' }).chomp
+      lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.display_offset.to_s.to_sym] = '|' }).chomp
       vals.each do |i|
-        inspected_val = SafeInspectable.new(Formatter.new(i.value, i.column)).inspect
+        inspected_val = SafeInspectable.new(Formatter.new(i.value, i.display_offset)).inspect
         inspected_val.each_line do |l|
           map_to = vals.each_with_object({}) do |j, h|
-            h[j.column.to_s.to_sym] = [l, '|', ' '][i.column <=> j.column]
+            h[j.display_offset.to_s.to_sym] = [l, '|', ' '][i.display_offset <=> j.display_offset]
           end
           lines << encoding_safe_rstrip(sprintf(fmt, map_to))
         end
@@ -145,6 +145,19 @@ module PowerAssert
       else
         str
       end
+    end
+
+    def calc_display_offset(str, byte_offset)
+      bytes = 0
+      display_offset = 0
+      str.each_char do |c,|
+        if bytes <= byte_offset and byte_offset < bytes+c.bytesize
+          return display_offset
+        end
+        bytes += c.bytesize
+        display_offset += c.ascii_only? ? 1 : 2 # FIXME
+      end
+      raise RangeError
     end
   end
   private_constant :Context

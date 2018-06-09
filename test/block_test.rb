@@ -263,7 +263,17 @@ END
 
     t do
       h = {}
-      assert(h["あ"] == h["a"])
+      assert_equal <<END.chomp, assertion_message {
+        h["あ"] == h["a"]
+        ||      |  ||
+        ||      |  |nil
+        ||      |  {}
+        ||      true
+        |nil
+        {}
+END
+        h["あ"] == h["a"]
+      }
     end
 
     sub_test_case 'attribute' do
