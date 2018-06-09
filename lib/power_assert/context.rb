@@ -67,16 +67,17 @@ module PowerAssert
       path = detect_path(parser, return_values)
       return line unless path
 
+      c2d = column2display_offset(parser.line)
       return_values, methods_in_path = find_all_identified_calls(return_values, path)
       return_values.zip(methods_in_path) do |i, j|
         unless i.name == j.name
           warn "power_assert: [BUG] Failed to get column: #{i.name}"
           return line
         end
-        i.display_offset = calc_display_offset(parser.line, j.column)
+        i.display_offset = c2d[j.column]
       end
       refs_in_path = path.find_all {|i| i.type == :ref }
-      ref_values = refs_in_path.map {|i| Value[i.name, parser.binding.eval(i.name), parser.lineno, i.column, calc_display_offset(parser.line, i.column)] }
+      ref_values = refs_in_path.map {|i| Value[i.name, parser.binding.eval(i.name), parser.lineno, i.column, c2d[i.column]] }
       vals = (return_values + ref_values).find_all(&:display_offset).sort_by(&:display_offset).reverse
       return line if vals.empty?
 
@@ -147,17 +148,14 @@ module PowerAssert
       end
     end
 
-    def calc_display_offset(str, byte_offset)
-      bytes = 0
+    def column2display_offset(str)
       display_offset = 0
-      str.each_char do |c,|
-        if bytes <= byte_offset and byte_offset < bytes+c.bytesize
-          return display_offset
+      str.each_char.with_object([]) do |c, r|
+        c.bytesize.times do
+          r << display_offset
         end
-        bytes += c.bytesize
         display_offset += c.ascii_only? ? 1 : 2 # FIXME
       end
-      raise RangeError
     end
   end
   private_constant :Context
