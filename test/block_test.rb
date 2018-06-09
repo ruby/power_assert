@@ -261,6 +261,11 @@ END
       }
     end
 
+    t do
+      h = {}
+      assert(h["あ"] == h["a"])
+    end
+
     sub_test_case 'attribute' do
       # TracePoint cannot trace attributes
       # https://bugs.ruby-lang.org/issues/10470

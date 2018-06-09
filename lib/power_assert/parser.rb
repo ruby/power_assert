@@ -8,7 +8,7 @@ module PowerAssert
 
     def initialize(line, path, lineno, binding, assertion_method_name = nil, assertion_proc = nil)
       @line = line
-      @line_for_parsing = valid_syntax?(line) ? line : slice_expression(line)
+      @line_for_parsing = (valid_syntax?(line) ? line : slice_expression(line)).b
       @path = path
       @lineno = lineno
       @binding = binding
