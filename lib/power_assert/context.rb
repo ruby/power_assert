@@ -179,6 +179,8 @@ module PowerAssert
           lineno = locs.last.lineno
           if File.exist?(path)
             line ||= File.open(path) {|fp| fp.each_line.drop(lineno - 1).first }
+          end
+          if line
             @parser = Parser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s, @assertion_proc)
           end
         end
