@@ -46,7 +46,10 @@ end
 [
   ["4:00,11,zz,yy,1y,y1", "3600,3721"], # /*05*/
 ].each do |(actual, expect)|
-  Benchmark.bm(30) do |x|
+  Benchmark.ips do |x|
+    x.warmup = 1
+    x.time = 2
+
     x.report("expr") { Yhpg.new(actual).output == expect }
     x.report("TracePoint.trace { expr }") { TracePoint.new(:return, :c_return) {}.enable { Yhpg.new(actual).output == expect } }
     x.report("assertion_message { expr }") {
@@ -55,5 +58,7 @@ end
     x.report("assertion_message { !expr }") {
       assertion_message { not Yhpg.new(actual).output == expect }
     }
+
+    x.compare!
   end
 end

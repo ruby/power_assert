@@ -1,4 +1,4 @@
-require 'benchmark'
+require 'benchmark/ips'
 require 'power_assert'
 
 def assertion_message(source = nil, source_binding = TOPLEVEL_BINDING, &blk)

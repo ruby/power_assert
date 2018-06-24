@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'byebug'
+  s.add_development_dependency 'benchmark-ips'
   s.extra_rdoc_files = ['README.rdoc']
   s.rdoc_options     = ['--main', 'README.rdoc']
   s.licenses         = ['2-clause BSDL', "Ruby's"]
