@@ -171,7 +171,7 @@ module PowerAssert
         line = assertion_proc_or_source
       end
       @parser = Parser::DUMMY
-      @trace_call = TracePoint.new(:call, :c_call) do |tp|
+      @trace_call = TracePoint.new(:call, :c_call) do
         if PowerAssert.app_context? and Thread.current == @target_thread
           @trace_call.disable
           locs = PowerAssert.app_caller_locations
