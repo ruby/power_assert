@@ -77,7 +77,14 @@ module PowerAssert
       when :opassign
         _, _, (_, op_name, (_, op_column)), s0 = sexp
         extract_idents(s0) + [Ident[:method, op_name.sub(/=\z/, ''), op_column]]
-      when :assoclist_from_args, :bare_assoc_hash, :dyna_symbol, :paren, :string_embexpr,
+      when :dyna_symbol
+        if sexp[1][0].is_a? Symbol
+          # sexp[1] can be [:string_content, [..]] while parsing { "a": 1 }
+          extract_idents(sexp[1])
+        else
+          sexp[1].flat_map {|s| extract_idents(s) }
+        end
+      when :assoclist_from_args, :bare_assoc_hash, :paren, :string_embexpr,
         :regexp_literal, :xstring_literal
         sexp[1].flat_map {|s| extract_idents(s) }
       when :command
