@@ -17,16 +17,14 @@ class TestDynaSymbolKey < Test::Unit::TestCase
     _test_parser(*args)
   end
 
-  sub_test_case 'branch' do
-    t do
-      assert_equal <<END.chomp, assertion_message {
-        {"a": 1.to_s}.nil?
-                |     |
-                |     false
-                "1"
+  t do
+    assert_equal <<END.chomp, assertion_message {
+      {"a": 1.to_s}.nil?
+              |     |
+              |     false
+              "1"
 END
-        {"a": 1.to_s}.nil?
-      }
-    end
+      {"a": 1.to_s}.nil?
+    }
   end
 end
