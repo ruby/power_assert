@@ -78,7 +78,7 @@ module PowerAssert
         _, _, (_, op_name, (_, op_column)), s0 = sexp
         extract_idents(s0) + [Ident[:method, op_name.sub(/=\z/, ''), op_column]]
       when :dyna_symbol
-        if sexp[1][0].is_a? Symbol
+        if sexp[1][0].kind_of?(Symbol)
           # sexp[1] can be [:string_content, [..]] while parsing { "a": 1 }
           extract_idents(sexp[1])
         else
