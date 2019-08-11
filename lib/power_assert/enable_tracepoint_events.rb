@@ -18,7 +18,7 @@ if defined?(RubyVM)
 
         basic_operators = [
           :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=,
-          :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min
+          :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min, :nil?
         ]
 
         bug11182 = Class.new do
