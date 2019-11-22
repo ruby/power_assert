@@ -38,6 +38,9 @@ module PowerAssert
           end
         rescue Exception => e
           warn "power_assert: [BUG] Failed to trace: #{e.class}: #{e.message}"
+          if e.respond_to?(:full_message)
+            warn e.full_message.gsub(/^/, 'power_assert:     ')
+          end
         end
       end
     end
