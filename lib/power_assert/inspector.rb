@@ -43,7 +43,7 @@ module PowerAssert
     def inspect
       if PowerAssert.configuration._colorize_message
         if PowerAssert.configuration._use_pp
-          width = [Pry::Terminal.width! - 1 - @indent, 10].max
+          width = [(defined?(Pry::Terminal) ? Pry::Terminal.width! : Pry.new(output: StringIO.new).output.width) - 1 - @indent, 10].max
           Pry::ColorPrinter.pp(@value, '', width)
         else
           Pry::Code.new(@value.inspect).highlighted
