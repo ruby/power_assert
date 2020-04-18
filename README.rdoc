@@ -78,4 +78,4 @@ Use following test frameworks or extensions instead.
       condition ? expected == actual : expected == actual
     end
 
-== Travis Build Status {<img src="https://secure.travis-ci.org/k-tsj/power_assert.png?branch=master"/>}[http://travis-ci.org/k-tsj/power_assert]
+== Travis Build Status {<img src="https://secure.travis-ci.org/ruby/power_assert.png?branch=master"/>}[http://travis-ci.org/ruby/power_assert]
