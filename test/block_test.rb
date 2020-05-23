@@ -4,7 +4,6 @@ end
 
 require_relative 'test_helper'
 require 'set'
-require 'pry'
 
 class TestBlockContext < Test::Unit::TestCase
   include PowerAssertTestHelper
