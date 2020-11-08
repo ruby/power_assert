@@ -27,5 +27,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'benchmark-ips'
   s.extra_rdoc_files = ['README.rdoc']
   s.rdoc_options     = ['--main', 'README.rdoc']
-  s.licenses         = ['2-clause BSDL', "Ruby's"]
+  s.licenses         = ['BSD-2-Clause', "Ruby"]
 end
