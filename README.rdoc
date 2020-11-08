@@ -25,7 +25,7 @@ Use following test frameworks or extensions instead.
 * {power_p}[https://github.com/k-tsj/power_p]
 
 == Requirement
-* CRuby 2.0.0 or later
+* CRuby 2.1 or later
 
 == Reference
 * {Power Assert in Ruby (at RubyKaigi 2014) // Speaker Deck}[https://speakerdeck.com/k_tsj/power-assert-in-ruby]
