@@ -93,12 +93,12 @@ module PowerAssert
       end.join
       lines = []
       lines << line.chomp
-      lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[v.display_offset.to_s.to_sym] = '|' }).chomp
+      lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[:"#{v.display_offset}"] = '|' }).chomp
       vals.each do |i|
         inspected_val = SafeInspectable.new(Formatter.new(i.value, i.display_offset)).inspect
         inspected_val.each_line do |l|
           map_to = vals.each_with_object({}) do |j, h|
-            h[j.display_offset.to_s.to_sym] = [l, '|', ' '][i.display_offset <=> j.display_offset]
+            h[:"#{j.display_offset}"] = [l, '|', ' '][i.display_offset <=> j.display_offset]
           end
           lines << encoding_safe_rstrip(sprintf(fmt, map_to))
         end
