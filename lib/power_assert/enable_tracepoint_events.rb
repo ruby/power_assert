@@ -7,80 +7,86 @@ if defined?(RubyVM)
       warn 'power_assert: See https://www.ruby-lang.org/en/news/2016/11/21/ruby-2-3-3-released/ for more details.'
     end
 
-    verbose = $VERBOSE
-    begin
-      $VERBOSE = nil
-      module PowerAssert
-        # set redefined flag
-        basic_classes = [
-          Fixnum, Float, String, Array, Hash, Bignum, Symbol, Time, Regexp, NilClass, TrueClass, FalseClass
-        ]
+    module PowerAssert
+      # set redefined flag
+      basic_classes = [
+        Integer, Float, String, Array, Hash, Symbol, Time, Regexp, NilClass, TrueClass, FalseClass
+      ]
 
-        basic_operators = [
-          :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=,
-          :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min, :nil?
-        ]
-
-        bug11182 = Class.new do
-          def fixed?
-            true
+      verbose = $VERBOSE
+      begin
+        $VERBOSE = nil
+        [:Fixnum, :Bignum].each do |c|
+          if Object.const_defined?(c) and (c = Object.const_get(c)) != Integer
+            basic_classes << c
           end
         end
+      ensure
+        $VERBOSE = verbose
+      end
 
-        refine bug11182 do
-          def fixed?
-          end
+      basic_operators = [
+        :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=,
+        :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min, :nil?
+      ]
+
+      bug11182 = Class.new do
+        def fixed?
+          true
         end
+      end
 
-        _ = Class.new(bug11182) do
-          alias _fixed? fixed?
-          protected :_fixed?
+      refine bug11182 do
+        def fixed?
         end
+      end
 
-        if (bug11182.new.fixed? rescue false)
-          basic_classes.each do |klass|
-            basic_operators.each do |bop|
-              if klass.public_method_defined?(bop)
-                refine(klass) do
-                  define_method(bop) {}
-                end
+      _ = Class.new(bug11182) do
+        alias _fixed? fixed?
+        protected :_fixed?
+      end
+
+      if (bug11182.new.fixed? rescue false)
+        basic_classes.each do |klass|
+          basic_operators.each do |bop|
+            if klass.public_method_defined?(bop)
+              refine(klass) do
+                define_method(bop) {}
               end
             end
           end
-        else
-          # workaround for https://bugs.ruby-lang.org/issues/11182
-          basic_classes.each do |klass|
-            basic_operators.each do |bop|
-              if klass.public_method_defined?(bop)
-                klass.ancestors.find {|i| i.instance_methods(false).index(bop) }.module_eval do
-                  public bop
-                end
+        end
+      else
+        # workaround for https://bugs.ruby-lang.org/issues/11182
+        basic_classes.each do |klass|
+          basic_operators.each do |bop|
+            if klass.public_method_defined?(bop)
+              klass.ancestors.find {|i| i.instance_methods(false).index(bop) }.module_eval do
+                public bop
               end
             end
           end
-
-          refine Symbol do
-            def ==
-            end
-          end
         end
 
-        # bypass check_cfunc
-        refine BasicObject do
-          def !
-          end
-
-          def ==
-          end
-        end
-
-        refine Module do
+        refine Symbol do
           def ==
           end
         end
       end
-    ensure
-      $VERBOSE = verbose
+
+      # bypass check_cfunc
+      refine BasicObject do
+        def !
+        end
+
+        def ==
+        end
+      end
+
+      refine Module do
+        def ==
+        end
+      end
     end
   end
 
