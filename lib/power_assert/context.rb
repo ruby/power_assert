@@ -61,7 +61,7 @@ module PowerAssert
     end
 
     def build_assertion_message(parser, return_values)
-      if PowerAssert.configuration._colorize_message
+      if PowerAssert.configuration.colorize_message
         line = IRB::Color.colorize_code(parser.line, ignore_error: true)
       else
         line = parser.line
@@ -95,7 +95,7 @@ module PowerAssert
       lines << line.chomp
       lines << sprintf(fmt, vals.each_with_object({}) {|v, h| h[:"#{v.display_offset}"] = '|' }).chomp
       vals.each do |i|
-        inspected_val = SafeInspectable.new(Formatter.new(i.value, i.display_offset)).inspect
+        inspected_val = SafeInspectable.new(Inspector.new(i.value, i.display_offset)).inspect
         inspected_val.each_line do |l|
           map_to = vals.each_with_object({}) do |j, h|
             h[:"#{j.display_offset}"] = [l, '|', ' '][i.display_offset <=> j.display_offset]

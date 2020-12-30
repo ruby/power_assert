@@ -538,16 +538,16 @@ END
   end
 
   data(
-       '_colorize_message/_use_pp' => [true,  true],
-       '_colorize_message'         => [true, false],
-       '_use_pp'                   => [false, true]
+       'colorize_message/inspector(pp)' => [true,  :pp],
+       'colorize_message'               => [true,  :p ],
+       'inspector(pp)'                  => [false, :pp]
   )
-  def test_colorized_pp((_colorize_message, _use_pp))
+  def test_colorized_pp((colorize_message, inspector))
     begin
       PowerAssert.configure do |c|
         c.lazy_inspection = true
-        c._colorize_message = _colorize_message
-        c._use_pp = _use_pp
+        c.colorize_message = colorize_message
+        c.inspector = inspector
       end
       assert_equal <<END.chomp, strip_color(assertion_message {
         0 == 0
@@ -556,7 +556,7 @@ END
 END
         0 == 0
       })
-      if _colorize_message
+      if colorize_message
         assert_not_equal <<END.chomp, assertion_message {
           0 == 0
             |
@@ -567,8 +567,8 @@ END
       end
     ensure
       PowerAssert.configure do |c|
-        c._use_pp = false
-        c._colorize_message = false
+        c.inspector = :p
+        c.colorize_message = false
         c.lazy_inspection = false
       end
     end

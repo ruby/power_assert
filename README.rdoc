@@ -27,6 +27,10 @@ Use following test frameworks or extensions instead.
 == Requirement
 * CRuby 2.1 or later
 
+== Configuration
+To colorize output messages, add <code>require "power_assert/colorize"</code> to your code.
+(It requires CRuby 3.0.1/irb 1.x.x or later)
+
 == Reference
 * {Power Assert in Ruby (at RubyKaigi 2014) // Speaker Deck}[https://speakerdeck.com/k_tsj/power-assert-in-ruby]
 

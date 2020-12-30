@@ -1,7 +1,7 @@
 module PowerAssert
   class << self
     def configuration
-      @configuration ||= Configuration[false, false, true, false, false]
+      @configuration ||= Configuration[false, false, true, false, :p]
     end
 
     def configure
@@ -12,7 +12,7 @@ module PowerAssert
   SUPPORT_ALIAS_METHOD = TracePoint.public_method_defined?(:callee_id)
   private_constant :SUPPORT_ALIAS_METHOD
 
-  class Configuration < Struct.new(:lazy_inspection, :_trace_alias_method, :_redefinition, :_colorize_message, :_use_pp)
+  class Configuration < Struct.new(:lazy_inspection, :_trace_alias_method, :_redefinition, :colorize_message, :inspector)
     def _trace_alias_method=(bool)
       super
       if SUPPORT_ALIAS_METHOD
@@ -20,10 +20,10 @@ module PowerAssert
       end
     end
 
-    def _colorize_message=(bool)
+    def colorize_message=(bool)
       if bool
         require 'irb/color'
-        if _use_pp
+        if inspector == :pp
           require 'irb/color_printer'
         end
       end
@@ -32,18 +32,22 @@ module PowerAssert
 
     def lazy_inspection=(bool)
       unless bool
-        raise 'lazy_inspection option must be enabled when using pp' if _use_pp
+        raise 'lazy_inspection option must be enabled when using pp' if inspector == :pp
       end
       super
     end
 
-    def _use_pp=(bool)
-      if bool
+    def inspector=(inspector)
+      case inspector
+      when :pp
         raise 'lazy_inspection option must be enabled when using pp' unless lazy_inspection
         require 'pp'
-        if _colorize_message
+        if colorize_message
           require 'irb/color_printer'
         end
+      when :p
+      else
+        raise ArgumentError, "unknown inspector: #{inspector}"
       end
       super
     end

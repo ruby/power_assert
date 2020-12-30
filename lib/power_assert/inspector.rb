@@ -35,22 +35,22 @@ module PowerAssert
   end
   private_constant :SafeInspectable
 
-  class Formatter
+  class Inspector
     def initialize(value, indent)
       @value = value
       @indent = indent
     end
 
     def inspect
-      if PowerAssert.configuration._colorize_message
-        if PowerAssert.configuration._use_pp
+      if PowerAssert.configuration.colorize_message
+        if PowerAssert.configuration.inspector == :pp
           width = [IO.console_size[1] - 1 - @indent, 10].max
           IRB::ColorPrinter.pp(@value, '', width)
         else
           IRB::Color.colorize_code(@value.to_s, ignore_error: true)
         end
       else
-        if PowerAssert.configuration._use_pp
+        if PowerAssert.configuration.inspector == :pp
           PP.pp(@value, '')
         else
           @value.inspect
@@ -58,5 +58,5 @@ module PowerAssert
       end
     end
   end
-  private_constant :Formatter
+  private_constant :Inspector
 end
