@@ -549,7 +549,7 @@ END
         c._colorize_message = _colorize_message
         c._use_pp = _use_pp
       end
-      assert_equal <<END.chomp, Pry::Helpers::Text.strip_color(assertion_message {
+      assert_equal <<END.chomp, strip_color(assertion_message {
         0 == 0
           |
           true

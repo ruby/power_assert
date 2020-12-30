@@ -62,7 +62,7 @@ module PowerAssert
 
     def build_assertion_message(parser, return_values)
       if PowerAssert.configuration._colorize_message
-        line = Pry::Code.new(parser.line).highlighted
+        line = IRB::Color.colorize_code(parser.line, ignore_error: true)
       else
         line = parser.line
       end

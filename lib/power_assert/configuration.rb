@@ -22,7 +22,10 @@ module PowerAssert
 
     def _colorize_message=(bool)
       if bool
-        require 'pry'
+        require 'irb/color'
+        if _use_pp
+          require 'irb/color_printer'
+        end
       end
       super
     end
@@ -38,6 +41,9 @@ module PowerAssert
       if bool
         raise 'lazy_inspection option must be enabled when using pp' unless lazy_inspection
         require 'pp'
+        if _colorize_message
+          require 'irb/color_printer'
+        end
       end
       super
     end

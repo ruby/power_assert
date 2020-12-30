@@ -56,6 +56,10 @@ module PowerAssertTestHelper
       pa.message
     end
   end
+
+  def strip_color(str)
+    str.gsub(/(\001)?\e\[.*?(\d)+m(\002)?/, '')
+  end
 end
 
 RubyVM::InstructionSequence.compile_option = {

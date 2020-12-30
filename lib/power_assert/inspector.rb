@@ -1,4 +1,5 @@
 require 'power_assert/configuration'
+require 'io/console/size'
 
 module PowerAssert
   class InspectedValue
@@ -43,10 +44,10 @@ module PowerAssert
     def inspect
       if PowerAssert.configuration._colorize_message
         if PowerAssert.configuration._use_pp
-          width = [(defined?(Pry::Terminal) ? Pry::Terminal.width! : Pry.new(output: StringIO.new).output.width) - 1 - @indent, 10].max
-          Pry::ColorPrinter.pp(@value, '', width)
+          width = [IO.console_size[1] - 1 - @indent, 10].max
+          IRB::ColorPrinter.pp(@value, '', width)
         else
-          Pry::Code.new(@value.inspect).highlighted
+          IRB::Color.colorize_code(@value.to_s, ignore_error: true)
         end
       else
         if PowerAssert.configuration._use_pp
