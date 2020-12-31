@@ -26,13 +26,6 @@ module PowerAssert
   INTERNAL_LIB_DIRS = {PowerAssert => POWER_ASSERT_LIB_DIR}
   private_constant :POWER_ASSERT_LIB_DIR, :INTERNAL_LIB_DIRS
 
-  # For backward compatibility
-  IGNORED_LIB_DIRS = INTERNAL_LIB_DIRS
-  private_constant :IGNORED_LIB_DIRS
-  if respond_to?(:deprecate_constant)
-    deprecate_constant :IGNORED_LIB_DIRS
-  end
-
   class << self
     def start(assertion_proc_or_source, assertion_method: nil, source_binding: TOPLEVEL_BINDING)
       if respond_to?(:clear_global_method_cache, true)
