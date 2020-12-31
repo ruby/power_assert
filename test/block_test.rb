@@ -377,23 +377,14 @@ END
 
   sub_test_case 'alias_method' do
     def setup
-      begin
-        PowerAssert.configure do |c|
-          c._trace_alias_method = true
-        end unless PowerAssert.const_get(:SUPPORT_ALIAS_METHOD)
-        @o = Class.new do
-          def foo
-            :foo
-          end
-          alias alias_of_iseq foo
-          alias alias_of_cfunc to_s
+      @o = Class.new do
+        def foo
+          :foo
         end
-        yield
-      ensure
-        PowerAssert.configure do |c|
-          c._trace_alias_method = false
-        end unless PowerAssert.const_get(:SUPPORT_ALIAS_METHOD)
+        alias alias_of_iseq foo
+        alias alias_of_cfunc to_s
       end
+      yield
     end
 
     t do
@@ -408,9 +399,6 @@ END
     end
 
     t do
-      unless PowerAssert.const_get(:SUPPORT_ALIAS_METHOD)
-        omit 'alias of cfunc is not supported yet'
-      end
       assert_match Regexp.new(<<END.chomp.gsub('|', "\\|")),
         assertion_message { @o.new.alias_of_cfunc }
                             |  |   |
@@ -596,22 +584,5 @@ END
 ENDA
       String(a) + String(@b) + String(@@c) + String($d)
 ENDB
-  end
-
-  def test_workaround_for_ruby_2_2
-    assert_nothing_raised do
-      assertion_message { Thread.new {}.join }
-    end
-  end
-
-  class H < Hash
-    alias aref []
-    protected :aref
-  end
-
-  def test_workaround_for_bug11182
-    assert_nothing_raised do
-      {}[:a]
-    end
   end
 end

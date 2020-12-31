@@ -1,7 +1,7 @@
 module PowerAssert
   class << self
     def configuration
-      @configuration ||= Configuration[false, false, true, false, :p]
+      @configuration ||= Configuration[false, true, false, :p]
     end
 
     def configure
@@ -9,17 +9,7 @@ module PowerAssert
     end
   end
 
-  SUPPORT_ALIAS_METHOD = TracePoint.public_method_defined?(:callee_id)
-  private_constant :SUPPORT_ALIAS_METHOD
-
-  class Configuration < Struct.new(:lazy_inspection, :_trace_alias_method, :_redefinition, :colorize_message, :inspector)
-    def _trace_alias_method=(bool)
-      super
-      if SUPPORT_ALIAS_METHOD
-        warn 'power_assert: _trace_alias_method option is obsolete. You no longer have to set it.'
-      end
-    end
-
+  class Configuration < Struct.new(:lazy_inspection, :_redefinition, :colorize_message, :inspector)
     def colorize_message=(bool)
       if bool
         require 'irb/color'
