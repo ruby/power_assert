@@ -544,7 +544,7 @@ END
 END
         0 == 0
       })
-      if colorize_message
+      if colorize_message and IRB::Color.colorable?
         assert_not_equal <<END.chomp, assertion_message {
           0 == 0
             |
