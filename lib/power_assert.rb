@@ -17,9 +17,9 @@ rescue
   raise LoadError, 'Fully compatible TracePoint API required'
 end
 
-require 'power_assert/version'
-require 'power_assert/configuration'
 require 'power_assert/context'
+require 'power_assert/configuration'
+require 'power_assert/version'
 
 module PowerAssert
   POWER_ASSERT_LIB_DIR = File.dirname(caller_locations(1, 1).first.path)
