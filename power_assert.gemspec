@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'irb', '>= 1.3.1'
   s.add_development_dependency 'byebug'
   s.add_development_dependency 'benchmark-ips'
-  s.extra_rdoc_files = ['README.rdoc']
-  s.rdoc_options     = ['--main', 'README.rdoc']
+  s.extra_rdoc_files = ['README.md']
+  s.rdoc_options     = ['--main', 'README.md']
   s.licenses         = ['BSD-2-Clause', "Ruby"]
 end
