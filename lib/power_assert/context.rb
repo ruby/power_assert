@@ -13,31 +13,29 @@ module PowerAssert
       method_id_set = nil
       @return_values = []
       @trace_return = TracePoint.new(:return, :c_return) do |tp|
-        begin
-          unless method_id_set
-            next unless Thread.current == @target_thread
-            method_id_set = @parser.method_id_set
+        unless method_id_set
+          next unless Thread.current == @target_thread
+          method_id_set = @parser.method_id_set
+        end
+        method_id = tp.callee_id
+        next if ! method_id_set[method_id]
+        next if tp.event == :c_return and
+                not (@parser.lineno == tp.lineno and @parser.path == tp.path)
+        locs = PowerAssert.app_caller_locations
+        diff = locs.length - base_caller_length
+        if (tp.event == :c_return && diff == 1 || tp.event == :return && diff <= 2) and Thread.current == @target_thread
+          idx = -(base_caller_length + 1)
+          if @parser.path == locs[idx].path and @parser.lineno == locs[idx].lineno
+            val = PowerAssert.configuration.lazy_inspection ?
+              tp.return_value :
+              InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
+            @return_values << Value[method_id.to_s, val, locs[idx].lineno, nil]
           end
-          method_id = tp.callee_id
-          next if ! method_id_set[method_id]
-          next if tp.event == :c_return and
-                  not (@parser.lineno == tp.lineno and @parser.path == tp.path)
-          locs = PowerAssert.app_caller_locations
-          diff = locs.length - base_caller_length
-          if (tp.event == :c_return && diff == 1 || tp.event == :return && diff <= 2) and Thread.current == @target_thread
-            idx = -(base_caller_length + 1)
-            if @parser.path == locs[idx].path and @parser.lineno == locs[idx].lineno
-              val = PowerAssert.configuration.lazy_inspection ?
-                tp.return_value :
-                InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
-              @return_values << Value[method_id.to_s, val, locs[idx].lineno, nil]
-            end
-          end
-        rescue Exception => e
-          warn "power_assert: [BUG] Failed to trace: #{e.class}: #{e.message}"
-          if e.respond_to?(:full_message)
-            warn e.full_message.gsub(/^/, 'power_assert:     ')
-          end
+        end
+      rescue Exception => e
+        warn "power_assert: [BUG] Failed to trace: #{e.class}: #{e.message}"
+        if e.respond_to?(:full_message)
+          warn e.full_message.gsub(/^/, 'power_assert:     ')
         end
       end
     end

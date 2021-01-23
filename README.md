@@ -23,7 +23,7 @@ Use following test frameworks or extensions instead.
 * [power_p](https://github.com/k-tsj/power_p)
 
 ## Requirement
-* CRuby 2.4+
+* CRuby 2.5+
 
 ## Configuration
 To colorize output messages, add <code>require "power_assert/colorize"</code> to your code.
