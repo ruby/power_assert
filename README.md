@@ -18,8 +18,10 @@ Use following test frameworks or extensions instead.
   * [Document](http://test-unit.github.io/test-unit/en/Test/Unit/Assertions.html#assert-instance_method)
 * [minitest-power_assert](https://github.com/hsbt/minitest-power_assert)
 * [rspec-power_assert](https://github.com/joker1007/rspec-power_assert)
+* [rspec-matchers-power_assert_matchers](https://github.com/kachick/rspec-matchers-power_assert_matchers)
 * [pry-power_assert](https://github.com/yui-knk/pry-power_assert)
 * [pry-byebug-power_assert](https://github.com/k-tsj/pry-byebug-power_assert)
+* [irb-power_assert](https://github.com/kachick/irb-power_assert)
 * [power_p](https://github.com/k-tsj/power_p)
 
 ## Requirement
