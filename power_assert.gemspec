@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.description = "Power Assert shows each value of variables and method calls in the expression. It is useful for testing, providing which value wasn't correct when the condition is not satisfied."
 
   s.files         = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features|benchmark)/})
+    f.match(%r{\A(?:test|spec|features|benchmark|bin)/})
   end
   s.bindir        = 'exe'
   s.executables   = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
