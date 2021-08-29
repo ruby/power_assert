@@ -300,7 +300,6 @@ END
           #<Class>
 END
         assert_includes [older, newer], assertion_message {
-
           @obj.to_i.to_i.to_s
         }
       end
