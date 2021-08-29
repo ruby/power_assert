@@ -276,8 +276,6 @@ END
     end
 
     sub_test_case 'attribute' do
-      # TracePoint cannot trace attributes
-      # https://bugs.ruby-lang.org/issues/10470
       setup do
         @obj = Class.new do
           attr_accessor :to_i
@@ -287,23 +285,41 @@ END
       end
 
       t do
-        assert_equal <<END.chomp, assertion_message {
+        older = <<END.chomp
           @obj.to_i.to_i.to_s
           |              |
           |              "0"
           #<Class>
 END
+        newer = <<END.chomp
+          @obj.to_i.to_i.to_s
+          |    |    |    |
+          |    |    |    "0"
+          |    |    0
+          |    0
+          #<Class>
+END
+        assert_includes [older, newer], assertion_message {
+
           @obj.to_i.to_i.to_s
         }
       end
 
       t do
-        assert_equal <<END.chomp, assertion_message {
+        older = <<END.chomp
           true ? @obj.to_i.to_s : @obj.to_i
                  |         |
                  |         "0"
                  #<Class>
 END
+        newer = <<END.chomp
+          true ? @obj.to_i.to_s : @obj.to_i
+                 |    |    |
+                 |    |    "0"
+                 |    0
+                 #<Class>
+END
+        assert_includes [older, newer], assertion_message {
           true ? @obj.to_i.to_s : @obj.to_i
         }
       end
