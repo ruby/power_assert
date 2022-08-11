@@ -21,8 +21,10 @@ if defined?(RubyVM)
       end
 
       basic_operators = [
-        :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=, :&, :|,
-        :length, :size, :empty?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min, :nil?
+        :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=, :length, :size,
+        :empty?, :nil?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min,
+        # :call (it is just used for block call optimization)
+        :&, :|
       ]
 
       basic_classes.each do |klass|
