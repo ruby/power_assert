@@ -1,5 +1,8 @@
 require 'power_assert/configuration'
-require 'io/console/size'
+begin
+  require 'io/console/size'
+rescue LoadError
+end
 
 module PowerAssert
   class InspectedValue
@@ -44,7 +47,8 @@ module PowerAssert
     def inspect
       if PowerAssert.configuration.colorize_message
         if PowerAssert.configuration.inspector == :pp
-          width = [IO.console_size[1] - 1 - @indent, 10].max
+          console_width = IO.respond_to?(:console_size) ? IO.console_size[1] : 80
+          width = [console_width - 1 - @indent, 10].max
           IRB::ColorPrinter.pp(@value, '', width)
         else
           IRB::Color.colorize_code(@value.to_s, ignore_error: true)
