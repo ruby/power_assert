@@ -1,3 +1,3 @@
 module PowerAssert
-  VERSION = "2.0.2dev"
+  VERSION = "2.0.2"
 end
