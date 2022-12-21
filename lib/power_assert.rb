@@ -5,12 +5,16 @@
 begin
   unless defined?(Byebug)
     captured = false
-    TracePoint.new(:return, :c_return) do |tp|
+    o = Class.new do
+      def a; 1 end
+      alias b a
+    end.new
+    TracePoint.new(:return) do |tp|
       captured = true
       unless tp.binding and tp.return_value and tp.callee_id
         raise ''
       end
-    end.enable { __id__ }
+    end.enable { o.b }
     raise '' unless captured
   end
 rescue
