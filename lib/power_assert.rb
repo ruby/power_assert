@@ -7,7 +7,7 @@ begin
     captured = false
     TracePoint.new(:return, :c_return) do |tp|
       captured = true
-      unless tp.binding and tp.return_value and tp.callee_id
+      unless tp.return_value and tp.callee_id
         raise ''
       end
     end.enable { __id__ }
