@@ -4,7 +4,6 @@ jobs:
   ruby-versions:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
-      engine: cruby
       min_version: 2.5
   test:
     needs: ruby-versions
