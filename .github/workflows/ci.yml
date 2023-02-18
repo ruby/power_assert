@@ -1,13 +1,19 @@
 on: [ push, pull_request ]
 
 jobs:
+  ruby-versions:
+    uses: ruby/actions/.github/workflows/ruby_versions.yml@master
+    with:
+      engine: cruby
+      min_version: 2.5
   test:
+    needs: ruby-versions
     name: >-
       Test (${{ matrix.ruby-version }} / ${{ matrix.os }} / TEST_SYMLINK: ${{ matrix.TEST_SYMLINK }})
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: [ 3.2, 3.1, '3.0', 2.7, 2.6, 2.5, head ]
+        ruby-version: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ ubuntu-latest, macos-latest ]
         TEST_SYMLINK: [ yes, no ]
     runs-on: ${{ matrix.os }}
