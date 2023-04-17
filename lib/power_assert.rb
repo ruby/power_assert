@@ -5,7 +5,9 @@
 begin
   unless defined?(Byebug)
     captured = false
+    target_thread = Thread.current
     TracePoint.new(:return, :c_return) do |tp|
+      next unless Thread.current == target_thread
       captured = true
       unless tp.return_value and tp.callee_id
         raise ''
