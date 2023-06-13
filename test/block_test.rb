@@ -4,7 +4,11 @@ end
 
 require_relative 'test_helper'
 require 'set'
-require 'pry'
+begin
+  require 'pry'
+rescue LoadError
+end
+
 
 class TestBlockContext < Test::Unit::TestCase
   include PowerAssertTestHelper
@@ -573,7 +577,7 @@ END
         c.lazy_inspection = false
       end
     end
-  end
+  end if defined?(Pry)
 
   def test_assertion_message_with_string
     a, = 0, a # suppress "assigned but unused variable" warning
