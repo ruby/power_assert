@@ -49,13 +49,13 @@ module PowerAssert
         if PowerAssert.configuration.inspector == :pp
           console_width = IO.respond_to?(:console_size) ? IO.console_size[1] : 80
           width = [console_width - 1 - @indent, 10].max
-          IRB::ColorPrinter.pp(@value, '', width)
+          IRB::ColorPrinter.pp(@value, +'', width)
         else
           IRB::Color.colorize_code(@value.to_s, ignore_error: true)
         end
       else
         if PowerAssert.configuration.inspector == :pp
-          PP.pp(@value, '')
+          PP.pp(@value, +'')
         else
           @value.inspect
         end
