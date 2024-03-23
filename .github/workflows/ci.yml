@@ -16,6 +16,11 @@ jobs:
         ruby-version: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         TEST_SYMLINK: [ yes, no ]
+        include:
+          - ruby-version: "3.3"
+            os: "ubuntu-latest"
+            TEST_SYMLINK: yes
+            rubyopt: "--enable-frozen-string-literal"
     runs-on: ${{ matrix.os }}
     env:
       TEST_SYMLINK: ${{ matrix.TEST_SYMLINK }}
@@ -32,7 +37,7 @@ jobs:
           bundle exec rake before_script
       - name: Run the test suite
         run: |
-          bundle exec rake
+          bundle exec rake RUBYOPT="${{ matrix.rubyopt }}"
       - name: Run after_script
         run: |
           bundle exec rake after_script

@@ -428,9 +428,9 @@ END
   sub_test_case 'assertion_message_with_incompatible_encodings' do
     if Encoding.default_external == Encoding::UTF_8
       t do
-        a = "\u3042"
+        a = +"\u3042"
         def a.inspect
-          super.encode('utf-16le')
+          super.encode(Encoding::UTF_16LE)
         end
         assert_equal <<END.chomp, assertion_message {
           a + a
@@ -445,9 +445,9 @@ END
     end
 
     t do
-      a = "\xFF"
+      a = +"\xFF"
       def a.inspect
-        "\xFF".force_encoding('ascii-8bit')
+        "\xFF".dup.force_encoding(Encoding::BINARY)
       end
       assert_equal <<END.chomp.b, assertion_message {
         a.length
