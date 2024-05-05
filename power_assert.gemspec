@@ -18,13 +18,6 @@ Gem::Specification.new do |s|
   s.bindir        = 'exe'
   s.executables   = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
   s.require_paths = ['lib']
-  s.add_development_dependency 'test-unit'
-  s.add_development_dependency 'rake'
-  s.add_development_dependency 'simplecov'
-  s.add_development_dependency 'bundler'
-  s.add_development_dependency 'irb', '>= 1.3.1'
-  s.add_development_dependency 'byebug'
-  s.add_development_dependency 'benchmark-ips'
   s.extra_rdoc_files = ['README.md']
   s.rdoc_options     = ['--main', 'README.md']
   s.licenses         = ['BSD-2-Clause', "Ruby"]
