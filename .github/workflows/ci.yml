@@ -21,6 +21,9 @@ jobs:
             os: "ubuntu-latest"
             TEST_SYMLINK: yes
             rubyopt: "--enable-frozen-string-literal"
+        exclude:
+          - ruby-version: "2.5"
+            os: "macos-latest"
     runs-on: ${{ matrix.os }}
     env:
       TEST_SYMLINK: ${{ matrix.TEST_SYMLINK }}
