@@ -24,7 +24,9 @@ if defined?(RubyVM)
         :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=, :length, :size,
         :empty?, :nil?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min,
         # :call (it is just used for block call optimization)
-        :&, :|
+        :&, :|,
+        # :default (no specialized instruction for this)
+        :pack, :include?,
       ]
 
       basic_classes.each do |klass|
