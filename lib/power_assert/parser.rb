@@ -175,7 +175,11 @@ module PowerAssert
         end
       when :@ident, :@const, :@op
         _, method_name, (_, column) = sexp
-        [Ident[:method, method_name, column]]
+        m = [Ident[:method, method_name, column]]
+        if method_name == "new"
+          m << Ident[:method, "initialize", column]
+        end
+        m
       else
         []
       end

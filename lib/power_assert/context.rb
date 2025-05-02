@@ -26,9 +26,11 @@ module PowerAssert
         if (tp.event == :c_return && diff == 1 || tp.event == :return && diff <= 2) and Thread.current == @target_thread
           idx = -(base_caller_length + 1)
           if @parser.path == locs[idx].path and @parser.lineno == locs[idx].lineno
+            ret = tp.return_value
+            ret = tp.self if method_id == :initialize
             val = PowerAssert.configuration.lazy_inspection ?
-              tp.return_value :
-              InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
+              ret :
+              InspectedValue.new(SafeInspectable.new(ret).inspect)
             @return_values << Value[method_id.to_s, val, locs[idx].lineno, nil]
           end
         end
