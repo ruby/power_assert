@@ -7,9 +7,34 @@ module PowerAssert
   class Context
     Value = Struct.new(:name, :value, :lineno, :column, :display_offset)
 
-    def initialize(base_caller_length)
+    def initialize(assertion_proc_or_source, assertion_method, source_binding)
       @fired = false
       @target_thread = Thread.current
+
+      if assertion_proc_or_source.respond_to?(:to_proc)
+        @assertion_proc = assertion_proc_or_source.to_proc
+        line = nil
+      else
+        @assertion_proc = source_binding.eval "Proc.new {#{assertion_proc_or_source}}"
+        line = assertion_proc_or_source
+      end
+
+      @parser = Parser::DUMMY
+      @trace_call = TracePoint.new(:call, :c_call) do
+        if PowerAssert.app_context? and Thread.current == @target_thread
+          @trace_call.disable
+          locs = PowerAssert.app_caller_locations
+          path = locs.last.path
+          lineno = locs.last.lineno
+          if File.exist?(path)
+            line ||= File.open(path) {|fp| fp.each_line.drop(lineno - 1).first }
+          end
+          if line
+            @parser = Parser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s, @assertion_proc)
+          end
+        end
+      end
+
       method_id_set = nil
       @return_values = []
       @trace_return = TracePoint.new(:return, :c_return) do |tp|
@@ -22,14 +47,12 @@ module PowerAssert
         next if tp.event == :c_return and
                 not (@parser.lineno == tp.lineno and @parser.path == tp.path)
         locs = PowerAssert.app_caller_locations
-        diff = locs.length - base_caller_length
-        if (tp.event == :c_return && diff == 1 || tp.event == :return && diff <= 2) and Thread.current == @target_thread
-          idx = -(base_caller_length + 1)
-          if @parser.path == locs[idx].path and @parser.lineno == locs[idx].lineno
+        if (tp.event == :c_return && locs.length == 1 || tp.event == :return && locs.length <= 2) and Thread.current == @target_thread
+          if @parser.path == locs.last.path and @parser.lineno == locs.last.lineno
             val = PowerAssert.configuration.lazy_inspection ?
               tp.return_value :
               InspectedValue.new(SafeInspectable.new(tp.return_value).inspect)
-            @return_values << Value[method_id.to_s, val, locs[idx].lineno, nil]
+            @return_values << Value[method_id.to_s, val, locs.last.lineno, nil]
           end
         end
       rescue Exception => e
@@ -41,7 +64,7 @@ module PowerAssert
     end
 
     def message
-      raise 'call #yield or #enable at first' unless fired?
+      raise 'call #yield at first' unless fired?
       @message ||= build_assertion_message(@parser, @return_values).freeze
     end
 
@@ -49,7 +72,20 @@ module PowerAssert
       -> { message }
     end
 
+    def yield
+      @fired = true
+      invoke_yield(&@assertion_proc)
+    end
+
     private
+
+    def invoke_yield
+      @trace_return.enable do
+        @trace_call.enable do
+          yield
+        end
+      end
+    end
 
     def fired?
       @fired
@@ -157,77 +193,4 @@ module PowerAssert
     end
   end
   private_constant :Context
-
-  class BlockContext < Context
-    def initialize(assertion_proc_or_source, assertion_method, source_binding)
-      super(0)
-      if assertion_proc_or_source.respond_to?(:to_proc)
-        @assertion_proc = assertion_proc_or_source.to_proc
-        line = nil
-      else
-        @assertion_proc = source_binding.eval "Proc.new {#{assertion_proc_or_source}}"
-        line = assertion_proc_or_source
-      end
-      @parser = Parser::DUMMY
-      @trace_call = TracePoint.new(:call, :c_call) do
-        if PowerAssert.app_context? and Thread.current == @target_thread
-          @trace_call.disable
-          locs = PowerAssert.app_caller_locations
-          path = locs.last.path
-          lineno = locs.last.lineno
-          if File.exist?(path)
-            line ||= File.open(path) {|fp| fp.each_line.drop(lineno - 1).first }
-          end
-          if line
-            @parser = Parser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s, @assertion_proc)
-          end
-        end
-      end
-    end
-
-    def yield
-      @fired = true
-      invoke_yield(&@assertion_proc)
-    end
-
-    private
-
-    def invoke_yield
-      @trace_return.enable do
-        @trace_call.enable do
-          yield
-        end
-      end
-    end
-  end
-  private_constant :BlockContext
-
-  class TraceContext < Context
-    def initialize(binding)
-      target_frame, *base = PowerAssert.app_caller_locations
-      super(base.length)
-      path = target_frame.path
-      lineno = target_frame.lineno
-      if File.exist?(path)
-        line = File.open(path) {|fp| fp.each_line.drop(lineno - 1).first }
-        @parser = Parser.new(line, path, lineno, binding)
-      else
-        @parser = Parser::DUMMY
-      end
-    end
-
-    def enable
-      @fired = true
-      @trace_return.enable
-    end
-
-    def disable
-      @trace_return.disable
-    end
-
-    def enabled?
-      @trace_return.enabled?
-    end
-  end
-  private_constant :TraceContext
 end

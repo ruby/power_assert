@@ -14,6 +14,5 @@ group :development do
   gem 'simplecov'
   gem 'bundler'
   gem 'irb', '>= 1.3.1'
-  gem 'byebug'
   gem 'benchmark-ips'
 end

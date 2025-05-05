@@ -3,18 +3,16 @@
 # Copyright (C) 2014 Kazuki Tsujimoto
 
 begin
-  unless defined?(Byebug)
-    captured = false
-    target_thread = Thread.current
-    TracePoint.new(:return, :c_return) do |tp|
-      next unless Thread.current == target_thread
-      captured = true
-      unless tp.return_value and tp.callee_id
-        raise ''
-      end
-    end.enable { __id__ }
-    raise '' unless captured
-  end
+  captured = false
+  target_thread = Thread.current
+  TracePoint.new(:return, :c_return) do |tp|
+    next unless Thread.current == target_thread
+    captured = true
+    unless tp.return_value and tp.callee_id
+      raise ''
+    end
+  end.enable { __id__ }
+  raise '' unless captured
 rescue
   raise LoadError, 'Fully compatible TracePoint API required'
 end
@@ -33,18 +31,7 @@ module PowerAssert
       if respond_to?(:clear_global_method_cache, true)
         clear_global_method_cache
       end
-      yield BlockContext.new(assertion_proc_or_source, assertion_method, source_binding)
-    end
-
-    def trace(frame)
-      begin
-        raise 'Byebug is not started yet' unless Byebug.started?
-      rescue NameError
-        raise "PowerAssert.#{__method__} requires Byebug"
-      end
-      ctx = TraceContext.new(frame._binding)
-      ctx.enable
-      ctx
+      yield Context.new(assertion_proc_or_source, assertion_method, source_binding)
     end
 
     def app_caller_locations
@@ -59,22 +46,9 @@ module PowerAssert
     private
 
     def internal_file?(file)
-      setup_internal_lib_dir(Byebug, :attach, 2) if defined?(Byebug)
-      setup_internal_lib_dir(PryByebug, :start_with_pry_byebug, 2, Pry) if defined?(PryByebug)
       INTERNAL_LIB_DIRS.find do |_, dir|
         file.start_with?(dir)
       end
-    end
-
-    def setup_internal_lib_dir(lib, mid, depth, lib_obj = lib)
-      unless INTERNAL_LIB_DIRS.key?(lib)
-        INTERNAL_LIB_DIRS[lib] = lib_dir(lib_obj, mid, depth)
-      end
-    rescue NameError
-    end
-
-    def lib_dir(obj, mid, depth)
-      File.expand_path('../' * depth, obj.method(mid).source_location[0])
     end
 
     if defined?(RubyVM)
