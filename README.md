@@ -24,11 +24,11 @@ Use following test frameworks or extensions instead.
 * [power_p](https://github.com/k-tsj/power_p)
 
 ## Requirement
-* CRuby 2.5+
+* CRuby 3.1+
 
 ## Configuration
 To colorize output messages, add <code>require "power_assert/colorize"</code> to your code.
-(It requires CRuby 3.0.1+ or irb 1.3.1+)
+(It requires irb 1.3.1+)
 
 ## Known Limitations
 * Expressions must be put in one line. Expressions with folded long lines produce nothing report, e.g.:
