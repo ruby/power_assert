@@ -16,11 +16,6 @@ require 'test/unit'
 require 'power_assert'
 require 'ripper'
 
-begin
-  require_relative 'test_core_ext_helper'
-rescue LoadError
-end
-
 module PowerAssertTestHelper
   class << self
     def included(base)
