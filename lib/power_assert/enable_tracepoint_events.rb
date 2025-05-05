@@ -52,6 +52,11 @@ if defined?(RubyVM)
         def ==
         end
       end
+
+      refine Class do
+        def new
+        end
+      end
     end
   end
 
