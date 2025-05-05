@@ -8,18 +8,6 @@ if defined?(RubyVM)
         Integer, Float, String, Array, Hash, Symbol, Time, Regexp, NilClass, TrueClass, FalseClass
       ]
 
-      verbose = $VERBOSE
-      begin
-        $VERBOSE = nil
-        [:Fixnum, :Bignum].each do |c|
-          if Object.const_defined?(c) and (c = Object.const_get(c)) != Integer
-            basic_classes << c
-          end
-        end
-      ensure
-        $VERBOSE = verbose
-      end
-
       basic_operators = [
         :+, :-, :*, :/, :%, :==, :===, :<, :<=, :<<, :[], :[]=, :length, :size,
         :empty?, :nil?, :succ, :>, :>=, :!, :!=, :=~, :freeze, :-@, :max, :min,
