@@ -285,13 +285,7 @@ END
       end
 
       t do
-        older = <<END.chomp
-          @obj.to_i.to_i.to_s
-          |              |
-          |              "0"
-          #<Class>
-END
-        newer = <<END.chomp
+        assert_equal <<END.chomp, assertion_message {
           @obj.to_i.to_i.to_s
           |    |    |    |
           |    |    |    "0"
@@ -299,7 +293,6 @@ END
           |    0
           #<Class>
 END
-        assert_includes [older, newer], assertion_message {
           @obj.to_i.to_i.to_s
         }
       end

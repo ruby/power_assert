@@ -61,23 +61,19 @@ assert do
 end
 ```
 
-* Returned values from accessor methods, method missing, or "super" produce nothing report, e.g:
+* Returned values from method missing, or "super" produce nothing report, e.g:
 
 ```ruby
 class Foo
-  attr_accessor :val
+  def method_missing(*)
+    :foo
+  end
 end
 foo = Foo.new
-foo.val = false
-
-assert do
-  # reported (only the value of "foo" and the literal "true")
-  foo.val == true
-end
 
 assert do
   # won't be reported
-  foo.val
+  foo.foo
 end
 ```
 
