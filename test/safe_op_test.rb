@@ -1,4 +1,4 @@
-if defined?(RubyVM) and ! RubyVM::InstructionSequence.compile_option[:specialized_instruction]
+if ! RubyVM::InstructionSequence.compile_option[:specialized_instruction]
   warn "#{__FILE__}: specialized_instruction is set to false"
 end
 

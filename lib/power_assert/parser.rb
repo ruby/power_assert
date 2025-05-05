@@ -33,16 +33,13 @@ module PowerAssert
     private
 
     def valid_syntax?(str)
-      return true unless defined?(RubyVM)
-      begin
-        verbose, $VERBOSE = $VERBOSE, nil
-        RubyVM::InstructionSequence.compile(str)
-        true
-      rescue SyntaxError
-        false
-      ensure
-        $VERBOSE = verbose
-      end
+      verbose, $VERBOSE = $VERBOSE, nil
+      RubyVM::InstructionSequence.compile(str)
+      true
+    rescue SyntaxError
+      false
+    ensure
+      $VERBOSE = verbose
     end
 
     def slice_expression(str)
