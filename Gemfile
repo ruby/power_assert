@@ -12,7 +12,6 @@ group :development do
   gem 'test-unit'
   gem 'rake'
   gem 'simplecov'
-  gem 'bundler'
   gem 'irb', '>= 1.3.1'
   gem 'benchmark-ips'
 end

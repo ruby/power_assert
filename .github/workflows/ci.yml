@@ -5,7 +5,7 @@ jobs:
     uses: ruby/actions/.github/workflows/ruby_versions.yml@master
     with:
       engine: cruby
-      min_version: 2.5
+      min_version: 3.1
   test:
     needs: ruby-versions
     name: >-
@@ -21,9 +21,6 @@ jobs:
             os: "ubuntu-latest"
             TEST_SYMLINK: yes
             rubyopt: "--enable-frozen-string-literal"
-        exclude:
-          - ruby-version: "2.5"
-            os: "macos-latest"
     runs-on: ${{ matrix.os }}
     env:
       TEST_SYMLINK: ${{ matrix.TEST_SYMLINK }}
