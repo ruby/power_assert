@@ -3,7 +3,6 @@ if ! RubyVM::InstructionSequence.compile_option[:specialized_instruction]
 end
 
 require_relative 'test_helper'
-require 'set'
 
 class TestBlockContext < Test::Unit::TestCase
   include PowerAssertTestHelper
@@ -137,7 +136,19 @@ END
     end
 
     t do
-      assert_equal <<END.chomp, assertion_message {
+      expected = if RUBY_VERSION >= '3.5'
+        <<END.chomp
+        Set.new == Set.new([0])
+        |   |   |  |   |
+        |   |   |  |   Set[0]
+        |   |   |  Set
+        |   |   false
+        |   Set[]
+        Set
+END
+      else
+        require "set"
+        <<END.chomp
         Set.new == Set.new([0])
         |   |   |  |   |
         |   |   |  |   #<Set: {0}>
@@ -146,6 +157,8 @@ END
         |   #<Set: {}>
         Set
 END
+      end
+      assert_equal expected, assertion_message {
         Set.new == Set.new([0])
       }
     end
