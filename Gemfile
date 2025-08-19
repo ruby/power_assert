@@ -13,5 +13,6 @@ group :development do
   gem 'rake'
   gem 'simplecov'
   gem 'irb', '>= 1.3.1'
+  gem 'fiddle'
   gem 'benchmark-ips'
 end
