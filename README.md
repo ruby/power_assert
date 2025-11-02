@@ -31,37 +31,37 @@ To colorize output messages, add <code>require "power_assert/colorize"</code> to
 (It requires irb 1.3.1+)
 
 ## Known Limitations
-* Expressions must be put in one line. Expressions with folded long lines produce nothing report, e.g.:
+* Expressions must be on a single line. Splitting an assertion across multiple lines prevents any report from being generated, e.g.:
 
 ```ruby
 assert do
-  # reported
+  # Reported
   func(foo: 0123456789, bar: "abcdefg")
 end
 
 assert do
-  # won't be reported
+  # Not reported
   func(foo: 0123456789,
        bar: "abcdefg")
 end
 ```
 
-* Expressions must have one or more method call. Expressions with no method call produce nothing report, e.g.:
+* Expressions must include at least one method call. Assertions without method calls generate no report, e.g.:
 
 ```ruby
 val = false
 assert do
-  # reported
+  # Reported
   val == true
 end
 
 assert do
-  # won't be reported
+  # Not reported
   val
 end
 ```
 
-* Returned values from method missing, or "super" produce nothing report, e.g:
+* Return values from `method_missing` or `super` generate no report, e.g.:
 
 ```ruby
 class Foo
@@ -72,20 +72,35 @@ end
 foo = Foo.new
 
 assert do
-  # won't be reported
+  # Not reported
   foo.foo
 end
 ```
 
-* Expressions should not have conditional branches. Expressions with such conditional codes may produce nothing report, e.g.:
+* Avoid conditional branches inside assertions. Conditional logic may prevent a report from being generated, e.g.:
 
 ```ruby
 condition = true
 expected = false
 actual = true
 assert do
-  # this will fail but nothing reported
+  # This fails, but nothing is reported
   condition ? expected == actual : expected == actual
+end
+```
+
+* (CRuby 4.0+) `<Struct subclass>.new` generates no report. Use `<Struct subclass>.[]` instead, e.g.:
+
+```ruby
+s = Struct.new(:a)
+assert do
+  # Not reported
+  s.new(0)
+end
+
+assert do
+  # Reported
+  s[0]
 end
 ```
 
