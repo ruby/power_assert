@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.summary     = "Power Assert for Ruby"
   s.description = "Power Assert shows each value of variables and method calls in the expression. It is useful for testing, providing which value wasn't correct when the condition is not satisfied."
 
+  s.required_ruby_version = '>= 3.1.0'
   s.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{\A(?:test|spec|features|benchmark|bin)/})
   end
