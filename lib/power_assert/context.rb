@@ -1,7 +1,7 @@
+require 'power_assert/parser'
 require 'power_assert/configuration'
 require 'power_assert/enable_tracepoint_events'
 require 'power_assert/inspector'
-require 'power_assert/parser'
 
 module PowerAssert
   class Context
