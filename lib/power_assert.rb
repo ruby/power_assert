@@ -28,7 +28,6 @@ module PowerAssert
 
   class << self
     def start(assertion_proc_or_source, assertion_method: nil, source_binding: TOPLEVEL_BINDING)
-      clear_global_method_cache
       yield Context.new(assertion_proc_or_source, assertion_method, source_binding)
     end
 
@@ -48,16 +47,5 @@ module PowerAssert
         file.start_with?(dir)
       end
     end
-
-    CLEAR_CACHE_ISEQ = RubyVM::InstructionSequence.compile('using PowerAssert.const_get(:Empty)')
-    private_constant :CLEAR_CACHE_ISEQ
-
-    def clear_global_method_cache
-      CLEAR_CACHE_ISEQ.eval
-    end
   end
-
-  module Empty
-  end
-  private_constant :Empty
 end

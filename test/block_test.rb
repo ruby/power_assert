@@ -351,19 +351,17 @@ END
       end
     end
 
-    if PowerAssert.respond_to?(:clear_global_method_cache, true)
-      t do
-        3.times do
-          assert_equal <<END.chomp, assertion_message {
-            String == Array
-            |      |  |
-            |      |  Array
-            |      false
-            String
+    t do
+      3.times do
+        assert_equal <<END.chomp, assertion_message {
+          String == Array
+          |      |  |
+          |      |  Array
+          |      false
+          String
 END
-            String == Array
-          }
-        end
+          String == Array
+        }
       end
     end
   end
