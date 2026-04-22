@@ -14,7 +14,6 @@ end
 
 require 'test/unit'
 require 'power_assert'
-require 'ripper'
 
 module PowerAssertTestHelper
   class << self
@@ -32,12 +31,24 @@ module PowerAssertTestHelper
 
   private
 
+  PrismParser = ::PowerAssert.const_get(:Parser)::PrismParser
+  RipperParser = ::PowerAssert.const_get(:Parser)::RipperParser
+  PARSER_CLASSES = RUBY_VERSION >= '3.3.0' ? [PrismParser, RipperParser] : [RipperParser]
+
   def _test_parser((expected_idents, expected_paths, source))
-    parser = ::PowerAssert.const_get(:Parser).new(source, '', 1, -> { var = nil; -> { var } }.().binding, 'assertion_message')
-    idents = parser.idents
-    assert_equal expected_idents, map_recursive(idents, &:to_a), source
-    if expected_paths
-      assert_equal expected_paths, map_recursive(parser.call_paths, &:name), source
+    PARSER_CLASSES.each do |parser_class|
+      parser = parser_class.new(source, '', 1, -> { var = nil; -> { var } }.().binding, 'assertion_message')
+      idents = parser.idents
+
+      if expected_idents.empty? && parser_class == PrismParser
+        # Allow PrismParser to handle more syntax than RipperParser.
+      else
+        assert_equal expected_idents, map_recursive(idents, &:to_a), source
+      end
+
+      if expected_paths
+        assert_equal expected_paths, map_recursive(parser.call_paths, &:name), source
+      end
     end
   end
 
