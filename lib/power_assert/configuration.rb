@@ -1,7 +1,7 @@
 module PowerAssert
   class << self
     def configuration
-      @configuration ||= Configuration[false, true, false, :p]
+      @configuration ||= Configuration[false, true, false, :p, :ripper]
     end
 
     def configure
@@ -9,7 +9,7 @@ module PowerAssert
     end
   end
 
-  class Configuration < Struct.new(:lazy_inspection, :_redefinition, :colorize_message, :inspector)
+  class Configuration < Struct.new(:lazy_inspection, :_redefinition, :colorize_message, :inspector, :parser)
     def colorize_message=(bool)
       if bool
         require 'irb/color'
@@ -38,6 +38,18 @@ module PowerAssert
       when :p
       else
         raise ArgumentError, "unknown inspector: #{inspector}"
+      end
+      super
+    end
+
+    def parser=(parser)
+      case parser
+      when :prism
+        require 'prism'
+      when :ripper
+        require 'ripper'
+      else
+        raise ArgumentError, "unknown parser: #{parser}"
       end
       super
     end

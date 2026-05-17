@@ -30,7 +30,8 @@ module PowerAssert
             line ||= File.open(path) {|fp| fp.each_line.drop(lineno - 1).first }
           end
           if line
-            @parser = Parser::RipperParser.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s, @assertion_proc)
+            parser_class = PowerAssert.configuration.parser == :prism ? Parser::PrismParser : Parser::RipperParser
+            @parser = parser_class.new(line, path, lineno, @assertion_proc.binding, assertion_method.to_s, @assertion_proc)
           end
         end
       end
