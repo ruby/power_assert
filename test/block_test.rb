@@ -62,6 +62,22 @@ END
 
   sub_test_case 'assertion_message' do
     t do
+      omit 'Proc#refined is not available' unless proc {}.respond_to?(:refined)
+      assert_equal <<'END'.chomp, assertion_message {
+        "a\nb\nc" == "a\nx\nc"
+                  |
+                  false
+
+ a
+-x
++b
+ c
+END
+        "a\nb\nc" == "a\nx\nc"
+      }
+    end
+
+    t do
       a = 0
       @b = 1
       @@c = 2

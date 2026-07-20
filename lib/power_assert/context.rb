@@ -2,6 +2,7 @@ require 'power_assert/parser'
 require 'power_assert/configuration'
 require 'power_assert/enable_tracepoint_events'
 require 'power_assert/inspector'
+require 'power_assert/diagnostics'
 
 module PowerAssert
   class Context
@@ -66,7 +67,16 @@ module PowerAssert
 
     def message
       raise 'call #yield at first' unless fired?
-      @message ||= build_assertion_message(@parser, @return_values).freeze
+      @message ||= begin
+        message = build_assertion_message(@parser, @return_values)
+        if ! @assertion_result and @diagnostic
+          actual, expected = @diagnostic
+          if String === expected
+            message = "#{message}\n\n#{build_diff(expected, actual)}"
+          end
+        end
+        message.freeze
+      end
     end
 
     def message_proc
@@ -75,7 +85,17 @@ module PowerAssert
 
     def yield
       @fired = true
-      invoke_yield(&@assertion_proc)
+      if @assertion_proc.respond_to?(:refined)
+        Diagnostics.capture = nil
+        begin
+          @assertion_result = invoke_yield(&@assertion_proc.refined(Diagnostics))
+        ensure
+          @diagnostic = Diagnostics.capture
+          Diagnostics.capture = nil
+        end
+      else
+        @assertion_result = invoke_yield(&@assertion_proc)
+      end
     end
 
     private
@@ -90,6 +110,27 @@ module PowerAssert
 
     def fired?
       @fired
+    end
+
+    def build_diff(expected, actual)
+      Diff::LCS.sdiff(expected.lines, actual.lines).each_with_object(+'') do |change, diff|
+        case change.action
+        when '='
+          append_diff_line(diff, ' ', change.old_element)
+        when '-'
+          append_diff_line(diff, '-', change.old_element)
+        when '+'
+          append_diff_line(diff, '+', change.new_element)
+        when '!'
+          append_diff_line(diff, '-', change.old_element)
+          append_diff_line(diff, '+', change.new_element)
+        end
+      end.chomp
+    end
+
+    def append_diff_line(diff, prefix, line)
+      diff << prefix << line
+      diff << "\n" unless line.end_with?("\n")
     end
 
     def build_assertion_message(parser, return_values)

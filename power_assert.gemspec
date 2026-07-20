@@ -21,4 +21,6 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md']
   s.rdoc_options     = ['--main', 'README.md']
   s.licenses         = ['BSD-2-Clause', "Ruby"]
+
+  s.add_runtime_dependency 'diff-lcs'
 end
