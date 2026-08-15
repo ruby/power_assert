@@ -37,13 +37,15 @@ module PowerAssert
     end
 
     def app_context?
-      top_frame = caller_locations.drop_while {|i| i.path.start_with?(POWER_ASSERT_LIB_DIR) }.first
+      top_frame = caller_locations.drop_while {|i| i.path&.start_with?(POWER_ASSERT_LIB_DIR) }.first
       top_frame and ! internal_file?(top_frame.path)
     end
 
     private
 
     def internal_file?(file)
+      return false unless file
+
       INTERNAL_LIB_DIRS.find do |_, dir|
         file.start_with?(dir)
       end
