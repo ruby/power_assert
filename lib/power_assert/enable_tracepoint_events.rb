@@ -46,8 +46,3 @@ if PowerAssert.configuration._redefinition
     end
   end
 end
-
-# disable optimization
-RubyVM::InstructionSequence.compile_option = {
-  specialized_instruction: false
-}
