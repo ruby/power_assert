@@ -67,7 +67,3 @@ module PowerAssertTestHelper
     str.gsub(/(\001)?\e\[.*?(\d)+m(\002)?/, '')
   end
 end
-
-RubyVM::InstructionSequence.compile_option = {
-  specialized_instruction: true
-}

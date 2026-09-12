@@ -1,7 +1,3 @@
-if ! RubyVM::InstructionSequence.compile_option[:specialized_instruction]
-  warn "#{__FILE__}: specialized_instruction is set to false"
-end
-
 require_relative 'test_helper'
 
 class TestBlockContext < Test::Unit::TestCase
